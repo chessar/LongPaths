@@ -1,4 +1,4 @@
-﻿# Chessar.LongPaths
+# Chessar.LongPaths
 
 **Chessar.LongPaths** is a .NET library that allows you to enable long path support for the main
 [`System.IO`](https://docs.microsoft.com/en-us/dotnet/api/system.io)
@@ -22,7 +22,7 @@ class. The replacement is done using
 [`JMP hooks`](https://github.com/wledfor2/PlayHooky)
 (thanks to [**@wledfor2**](https://github.com/wledfor2)),
 in which the long path prefix **`\\?\`** or **`\\?\UNC\`** is added.
-Adding a prefix is ​​done by calling the internal function
+Adding a prefix is done by calling the internal function
 [`Path.AddLongPathPrefix`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,43fffcdead19ea64).
 Note also that the addition of such prefixes depends on the `UseLegacyPathHandling` and
 `BlockLongPaths` settings, which must necessarily be `false` (in the
@@ -77,11 +77,11 @@ using static Chessar.Hooks;
 ```
 
 **Note** that [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
-does not work for long paths, even if a prefix is ​​added.
+does not work for long paths, even if a prefix is added.
 
 # TODO
-1. Speed up MethodInfo.Invoke in the class [`Hooks`](src\Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).
-2. Add long path support in ctors/methods from [`Notes`](#Notes).
+1. Speed up MethodInfo.Invoke in the class [`Hooks`](src/Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).
+2. Add long path support in ctors/methods from [`Notes`](#notes).
 3. Add more unit tests.
 4. Make hooks more thread safe.
 
