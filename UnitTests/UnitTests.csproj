@@ -62,6 +62,26 @@
     <Compile Include="..\src\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DirectoryInfo\Delete.cs" />
+    <Compile Include="DirectoryInfo\EnumerateDirectories.cs" />
+    <Compile Include="DirectoryInfo\EnumerateFiles.cs" />
+    <Compile Include="DirectoryInfo\EnumerateFileSystemInfos.cs" />
+    <Compile Include="DirectoryInfo\Root.cs" />
+    <Compile Include="DirectoryInfo\Parent.cs" />
+    <Compile Include="DirectoryInfo\Name.cs" />
+    <Compile Include="DirectoryInfo\GetDirectories.cs" />
+    <Compile Include="DirectoryInfo\GetFiles.cs" />
+    <Compile Include="DirectoryInfo\GetFileSystemInfos.cs" />
+    <Compile Include="DirectoryInfo\GetSetAccessControl.cs" />
+    <Compile Include="DirectoryInfo\FullName.cs" />
+    <Compile Include="DirectoryInfo\Extension.cs" />
+    <Compile Include="DirectoryInfo\Exists.cs" />
+    <Compile Include="DirectoryInfo\MoveTo.cs" />
+    <Compile Include="DirectoryInfo\TimeUtc.cs" />
+    <Compile Include="DirectoryInfo\Time.cs" />
+    <Compile Include="DirectoryInfo\CreateSubdirectory.cs" />
+    <Compile Include="DirectoryInfo\Create.cs" />
+    <Compile Include="DirectoryInfo\Attributes.cs" />
     <Compile Include="Directory\Delete.cs" />
     <Compile Include="Directory\CreateDirectory.cs" />
     <Compile Include="Directory\EnumerateDirectories.cs" />

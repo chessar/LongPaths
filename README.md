@@ -66,7 +66,8 @@ For the following list of ctors/methods, you must directly specify the prefix of
 * [`Directory.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getaccesscontrol)
 * [`File.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.file.getaccesscontrol)
 * [`Directory.Move(String, String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.move)
-* [`Directory.Delete(String[, Boolean])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.delete) (at **Release** build)
+* [`Directory.Delete(String[, Boolean])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.delete)
+* [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
 
 for example:
 ```csharp
@@ -75,6 +76,8 @@ using static Chessar.Hooks;
 ...
     var ds = new DirectorySecurity(path.AddLongPathPrefix(), acs);
 ```
+or use [`DirectoryInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo) instead `Directory` (exclude `MoveTo` method) and
+[`FileInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.fileinfo) instead `File`.
 
 **Note** that [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
 does not work for long paths, even if a prefix is added.

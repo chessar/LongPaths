@@ -6,13 +6,15 @@ namespace Chessar.UnitTests
 {
     partial class LongPathTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_Move()
+        [TestMethod, TestCategory(nameof(DirectoryInfo))]
+        public void DirectoryInfo_MoveTo()
         {
             var (path, pathWithPrefix) = CreateLongTempFolder();
             var (pathNew, pathNewWithPrefix) = CreateLongTempFolder(true);
 
-            Directory.Move(path, pathNew);
+            var di = new DirectoryInfo(path);
+
+            di.MoveTo(pathNew);
 
             IsTrue(Directory.Exists(pathNewWithPrefix));
             IsFalse(Directory.Exists(pathWithPrefix));

@@ -21,7 +21,8 @@ namespace Chessar.UnitTests
 
         private readonly string
             tempFolder = null,
-            longTempFolder = null;
+            longTempFolder = null,
+            longFolderName;
 
         private readonly UTF8Encoding enc;
 
@@ -39,9 +40,9 @@ namespace Chessar.UnitTests
             tempFolder = Combine(GetTempPath(), RandomString).Trim('\\', '/', '?');
             if (!Directory.Exists(tempFolder))
                 Directory.CreateDirectory(tempFolder);
-            var part = new string('a', 254);
+            longFolderName = new string('a', 254);
             var s = DirectorySeparatorChar;
-            longTempFolder = $"{tempFolder}{s}{part}{s}{part}{s}{part}{s}{part}{s}";
+            longTempFolder = $"{tempFolder}{s}{longFolderName}{s}{longFolderName}{s}{longFolderName}{s}{longFolderName}{s}";
             enc = new UTF8Encoding(false, false);
         }
 
