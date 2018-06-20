@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using System.Threading;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
@@ -10,6 +11,7 @@ namespace Chessar.UnitTests
         public void File_Replace()
         {
             var (path, pathWithPrefix) = CreateLongTempFile();
+            Thread.Sleep(10);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFile();
 
             IsTrue(File.Exists(pathNewWithPrefix));

@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using System.Threading;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
@@ -15,6 +16,7 @@ namespace Chessar.UnitTests
         private void FileInfoCopyTo(in bool overwrite)
         {
             var (path, pathWithPrefix) = CreateLongTempFile();
+            Thread.Sleep(10);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFile(!overwrite);
 
             var fi = new FileInfo(path);

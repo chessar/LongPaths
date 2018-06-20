@@ -34,13 +34,13 @@ In this case, your code does not need to directly add such prefixes to the paths
 
 # How to use
 1. Add the [Chessar.LongPaths](https://www.nuget.org/packages/Chessar.LongPaths/) NuGet package to the project.
-2. In the file `app.config`, in the section `runtime`, add:
+2. In the file `app.config` (or `web.config`), in the section `runtime`, add:
 ```xml
 <configuration>
 ...
-<runtime>
-  <AppContextSwitchOverrides value="Switch.System.IO.UseLegacyPathHandling=false;Switch.System.IO.BlockLongPaths=false" />
-</runtime>
+  <runtime>
+    <AppContextSwitchOverrides value="Switch.System.IO.UseLegacyPathHandling=false;Switch.System.IO.BlockLongPaths=false" />
+  </runtime>
 ...
 ```
 3. In the code (when you start the application or at the beginning of `Main`) add code:

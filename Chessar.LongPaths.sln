@@ -48,6 +48,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "AspNetForms", "Examples\Asp
 		StartServerOnDebug = "true"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "Examples\ConsoleApp\ConsoleApp.csproj", "{68C7EA89-38C0-4E42-B69B-E33950A776F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,12 +69,17 @@ Global
 		{278BE181-D21F-4B09-9DFA-15114069A92E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{278BE181-D21F-4B09-9DFA-15114069A92E}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{278BE181-D21F-4B09-9DFA-15114069A92E}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{68C7EA89-38C0-4E42-B69B-E33950A776F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68C7EA89-38C0-4E42-B69B-E33950A776F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68C7EA89-38C0-4E42-B69B-E33950A776F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68C7EA89-38C0-4E42-B69B-E33950A776F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{278BE181-D21F-4B09-9DFA-15114069A92E} = {5DED8002-CDB2-4395-921F-2CCFB36ECBC8}
+		{68C7EA89-38C0-4E42-B69B-E33950A776F9} = {5DED8002-CDB2-4395-921F-2CCFB36ECBC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FC64FB5A-1A45-4745-A123-8787EBD26EE4}
