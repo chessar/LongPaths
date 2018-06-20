@@ -16,10 +16,42 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{57A97E2C-46F8-404E-8985-DC758775A52E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{5DED8002-CDB2-4395-921F-2CCFB36ECBC8}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "AspNetForms", "Examples\AspNetForms\", "{278BE181-D21F-4B09-9DFA-15114069A92E}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.6.2"
+		ProjectReferences = "{87f5be27-bd87-47d0-b3c9-db92d3659027}|Chessar.LongPaths.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_30879"
+		Debug.AspNetCompiler.PhysicalPath = "Examples\AspNetForms\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_30879\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.KeyFile = "Chessar.snk"
+		Debug.AspNetCompiler.DelaySign = "false"
+		Debug.AspNetCompiler.AllowPartiallyTrustedCallers = "false"
+		Debug.AspNetCompiler.FixedNames = "true"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_30879"
+		Release.AspNetCompiler.PhysicalPath = "Examples\AspNetForms\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_30879\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.KeyFile = "Chessar.snk"
+		Release.AspNetCompiler.DelaySign = "false"
+		Release.AspNetCompiler.AllowPartiallyTrustedCallers = "false"
+		Release.AspNetCompiler.FixedNames = "true"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "30879"
+		SlnRelativePath = "Examples\AspNetForms\"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Description = Long Path Support
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{87F5BE27-BD87-47D0-B3C9-DB92D3659027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -30,9 +62,16 @@ Global
 		{57A97E2C-46F8-404E-8985-DC758775A52E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57A97E2C-46F8-404E-8985-DC758775A52E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57A97E2C-46F8-404E-8985-DC758775A52E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{278BE181-D21F-4B09-9DFA-15114069A92E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{278BE181-D21F-4B09-9DFA-15114069A92E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{278BE181-D21F-4B09-9DFA-15114069A92E}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{278BE181-D21F-4B09-9DFA-15114069A92E}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{278BE181-D21F-4B09-9DFA-15114069A92E} = {5DED8002-CDB2-4395-921F-2CCFB36ECBC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FC64FB5A-1A45-4745-A123-8787EBD26EE4}

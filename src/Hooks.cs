@@ -9,7 +9,6 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Security.AccessControl;
 using static Chessar.HookManager;
 
 namespace Chessar
@@ -24,7 +23,7 @@ namespace Chessar
         private static readonly BindingFlags
             privateStatic = BindingFlags.NonPublic | BindingFlags.Static;
         private static readonly Lazy<MethodInfo>
-            normalizePathOriginal = new Lazy<MethodInfo>(() => 
+            normalizePathOriginal = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("NormalizePath", privateStatic, null,
                     new[] { typeof(string), typeof(bool), typeof(int) }, null)),
             getFullPathInternalOriginal = new Lazy<MethodInfo>(() =>
@@ -74,14 +73,14 @@ namespace Chessar
         {
             // patch NormalizePath(string, bool, int) for FileStream
             Hook(normalizePathOriginal.Value,
-                typeof(Hooks).GetMethod(nameof(PatchedNormalizePath3), privateStatic, null,
+                typeof(Hooks).GetMethod(nameof(NormalizePathPatched), privateStatic, null,
                     new[] { typeof(string), typeof(bool), typeof(int) }, null));
 
             // patch GetFullPathInternal(string) for IO methods
             try
             {
                 Hook(getFullPathInternalOriginal.Value,
-                    typeof(Hooks).GetMethod(nameof(PatchedGetFullPathInternal), privateStatic, null,
+                    typeof(Hooks).GetMethod(nameof(GetFullPathInternalPatched), privateStatic, null,
                         new[] { typeof(string) }, null));
             }
             catch
@@ -149,7 +148,7 @@ namespace Chessar
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)] // required
-        private static string PatchedNormalizePath3(string path, bool fullCheck, int maxPathLength)
+        private static string NormalizePathPatched(string path, bool fullCheck, int maxPathLength)
         {
             var normalizedPath = NormalizePath4(path, fullCheck, maxPathLength);
 
@@ -162,45 +161,80 @@ namespace Chessar
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         [MethodImpl(MethodImplOptions.NoInlining)] // required
-        private static string PatchedGetFullPathInternal(string path)
+        private static string GetFullPathInternalPatched(string path)
         {
             if (path is null)
                 throw new ArgumentNullException(nameof(path));
             Contract.EndContractBlock();
 
-            Type callerType = null;
+            StackTrace st = null;
+            Type cType = null;
+            string ccTypeFullName = null;
             try
             {
-                var st = new StackTrace(1, false);
-                callerType = st.GetFrame(0)?.GetMethod()?.DeclaringType;
+                st = new StackTrace(1, false);
+                if (st.FrameCount > 0)
+                {
+                    cType = st.GetFrame(0)?.GetMethod().DeclaringType;
+                    if (st.FrameCount > 1)
+                        ccTypeFullName = st.GetFrame(1)?.GetMethod()?.DeclaringType?.FullName;
+                }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                TraceGetFullPathInternalPatchedError(ex, cType);
+            }
 
-            //using (var sw = File.AppendText(@"d:\temp\log.txt"))
-            //    sw.WriteLine($"{callerType?.Name ?? "(no)"}[{trace.GetFrame(0)?.GetMethod()?.Name ?? "(no)"}]");
+            var needPatch = st != null && NeedPatch(cType, ccTypeFullName);
 
-            return NeedPatch(callerType)
-                ? PatchedNormalizePath3(path, true, short.MaxValue)
+            TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch);
+
+            return needPatch
+                ? NormalizePathPatched(path, true, short.MaxValue)
                 : NormalizePath4(path, true, short.MaxValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool NeedPatch(Type t) => (t != null &&
-        (
-            // File/Directory/FileInfo/DirectoryInfo
-            t == typeof(File) ||
-            t == typeof(Directory) ||
-            t == typeof(FileInfo) ||
-            t == typeof(DirectoryInfo) ||
-            t == typeof(FileSystemInfo) ||
-            // File/DirectorySecurity
-            t == typeof(FileSecurity) ||
-            t == typeof(DirectorySecurity) ||
-            // Image (FromFile)
-            t.FullName == "System.Drawing.Image" ||
-            // Directory/DirectoryInfo.GetFiles/GetFolders
-            t.Name.StartsWith("FileSystemEnumerableIterator", StringComparison.Ordinal)
-        ));
+        private static bool NeedPatch(Type t, string fn) => t is null ||
+        // exclude types for patch, see references to Path.GetFullPathInternal
+        // https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,72f9fabbc9d544a5,references
+        !(
+            // StringExpressionSet (https://referencesource.microsoft.com/#mscorlib/system/security/util/stringexpressionset.cs,755)
+            string.Equals(t.Name, "StringExpressionSet") ||
+
+            // System.Reflection Namespace
+            t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (
+
+            // Path
+            t == typeof(Path) && fn != null && (
+                fn.StartsWith("System.Web.", StringComparison.Ordinal) ||
+                fn.StartsWith("System.CodeDom.", StringComparison.Ordinal) ||
+                fn.StartsWith("System.Drawing.IntSecurity", StringComparison.Ordinal)))/*||
+
+            // AppDomainSetup (https://referencesource.microsoft.com/#mscorlib/system/AppDomainSetup.cs,881)
+            t == typeof(AppDomainSetup) ||
+
+            // ConfigTreeParser (https://referencesource.microsoft.com/#mscorlib/system/cfgparser.cs,274)
+            string.Equals(t.Name, "ConfigTreeParser")*/
+        );
+
+        [Conditional("TRACE"), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void TraceGetFullPathInternalPatchedInfo(StackTrace st, Type ct, in bool patched)
+        {
+            if (ct?.IsSubclassOf(typeof(TraceListener)) ?? false)
+                return;
+            Trace.TraceInformation("[GetFullPathInternal Patched = {0}]:\r\n{1}", patched, st?.ToString() ?? "<no StackTrace>");
+            Trace.Flush();
+        }
+
+        [Conditional("TRACE"), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void TraceGetFullPathInternalPatchedError(Exception ex, Type ct)
+        {
+            if (ex is null || (ct?.IsSubclassOf(typeof(TraceListener)) ?? false))
+                return;
+            Trace.TraceError("[GetFullPathInternal StackTrace Exception]:\r\n{0}", ex);
+            Trace.Flush();
+        }
 
         #endregion
     }

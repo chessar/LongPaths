@@ -9,13 +9,12 @@ classes:
 [`FileInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.fileinfo),
 [`Directory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory),
 [`DirectoryInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo), ...
-
 (and others, for example [`Image.FromFile`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.fromfile)).
 
 The library is based on replacing the internal
-[`NormalizePath`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,e0e2c91ae0993cea)
+[`NormalizePath`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,390)
 and
-[`GetFullPathInternal`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,72f9fabbc9d544a5)
+[`GetFullPathInternal`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,361)
 functions from the static
 [`Path`](https://docs.microsoft.com/en-us/dotnet/api/system.io.path)
 class. The replacement is done using
@@ -23,7 +22,7 @@ class. The replacement is done using
 (thanks to [**@wledfor2**](https://github.com/wledfor2)),
 in which the long path prefix **`\\?\`** or **`\\?\UNC\`** is added.
 Adding a prefix is done by calling the internal function
-[`Path.AddLongPathPrefix`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,43fffcdead19ea64).
+[`Path.AddLongPathPrefix`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,944).
 Note also that the addition of such prefixes depends on the `UseLegacyPathHandling` and
 `BlockLongPaths` settings, which must necessarily be `false` (in the
 [`AppContextSwitchOverrides`](https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/appcontextswitchoverrides-element) element).
@@ -53,20 +52,27 @@ using static Chessar.Hooks;
     PatchLongPaths();
 
 ```
-4. At the end of the application:
+4. Usage
+```csharp
+...
+var fileInfo = new FileInfo(path);
+var fullName = fileInfo.FullName; // with long path prefix
+...
+```
+5. At the end of the application:
 ```csharp
     RemoveLongPathsPatch();
 ```
+See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 
 # Notes
 For the following list of ctors/methods, you must directly specify the prefix of long paths
-(because they are not supported by this library, see [Unit Tests](UnitTests)):
+(because they are not supported by this library, see [Unit Tests](https://github.com/chessar/LongPaths/tree/master/UnitTests)):
 * [`new DirectorySecurity(String, AccessControlSections)`](https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.directorysecurity.-ctor#System_Security_AccessControl_DirectorySecurity__ctor_System_String_System_Security_AccessControl_AccessControlSections_)
 * [`new FileSecurity(String, AccessControlSections)`](https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.filesecurity.-ctor#System_Security_AccessControl_FileSecurity__ctor_System_String_System_Security_AccessControl_AccessControlSections_)
 * [`Directory.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getaccesscontrol)
 * [`File.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.file.getaccesscontrol)
 * [`Directory.Move(String, String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.move)
-* [`Directory.Delete(String[, Boolean])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.delete)
 * [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
 
 for example:
@@ -79,14 +85,16 @@ using static Chessar.Hooks;
 or use [`DirectoryInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo) instead `Directory` (exclude `MoveTo` method) and
 [`FileInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.fileinfo) instead `File`.
 
-**Note** that [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
+**Note** that
+[`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory),
+[`Image.Save`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.save)
 does not work for long paths, even if a prefix is added.
 
 # TODO
-1. Speed up MethodInfo.Invoke in the class [`Hooks`](src/Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).
-2. Add long path support in ctors/methods from [`Notes`](#notes).
+1. Speed up MethodInfo.Invoke in the class [`Hooks`](https://github.com/chessar/LongPaths/blob/master/src/Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).
+2. Add long path support in ctors/methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
 3. Add more unit tests.
 4. Make hooks more thread safe.
 
 # License
-MIT - See [LICENSE](LICENSE.md)
+MIT - See [LICENSE](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)
