@@ -9,7 +9,7 @@ classes:
 [`FileInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.fileinfo),
 [`Directory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory),
 [`DirectoryInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo), ...
-(and others, for example [`Image.FromFile`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.fromfile)).
+(and others).
 
 The library is based on replacing the internal
 [`NormalizePath`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,390)
@@ -85,10 +85,9 @@ using static Chessar.Hooks;
 or use [`DirectoryInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo) instead `Directory` (exclude `MoveTo` method) and
 [`FileInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.fileinfo) instead `File`.
 
-**Note** that
-[`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory),
-[`Image.Save`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.save)
-does not work for long paths, even if a prefix is added.
+**Note** that, next methods does not work for long paths, even if a prefix is added:
+* [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
+* [`Image.Save(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.save) (use `Image.Save` to `Stream` instead)
 
 # TODO
 1. Speed up MethodInfo.Invoke in the class [`Hooks`](https://github.com/chessar/LongPaths/blob/master/src/Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).

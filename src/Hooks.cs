@@ -170,13 +170,16 @@ namespace Chessar
             StackTrace st = null;
             Type cType = null;
             string ccTypeFullName = null;
+            var isGetTempPath = false;
             try
             {
                 st = new StackTrace(1, false);
                 if (st.FrameCount > 0)
                 {
-                    cType = st.GetFrame(0)?.GetMethod().DeclaringType;
-                    if (st.FrameCount > 1)
+                    var cMethod = st.GetFrame(0)?.GetMethod();
+                    cType = cMethod?.DeclaringType;
+                    isGetTempPath = (cType == typeof(Path) && string.Equals("GetTempPath", cMethod?.Name));
+                    if (!isGetTempPath && st.FrameCount > 1)
                         ccTypeFullName = st.GetFrame(1)?.GetMethod()?.DeclaringType?.FullName;
                 }
             }
@@ -185,7 +188,7 @@ namespace Chessar
                 TraceGetFullPathInternalPatchedError(ex, cType);
             }
 
-            var needPatch = st != null && NeedPatch(cType, ccTypeFullName);
+            var needPatch = !isGetTempPath && st != null && NeedPatch(cType, ccTypeFullName);
 
             TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch);
 

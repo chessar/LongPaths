@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Text;
 using static Chessar.Hooks;
+using static Chessar.UnitTests.Utils;
 using static System.IO.Path;
 
 namespace Chessar.UnitTests
@@ -12,8 +13,6 @@ namespace Chessar.UnitTests
     public sealed partial class LongPathTests
     {
         private const string
-            prefix = @"\\?\",
-            uncPrefix = @"\\?\UNC\",
             ten = "0123456789";
 
         private const AccessControlSections defaultAcs =
@@ -27,7 +26,7 @@ namespace Chessar.UnitTests
         private readonly UTF8Encoding enc;
 
         private static string WithPrefix(string path, in bool unc = false)
-            => $"{(unc ? uncPrefix : prefix)}{path}";
+            => $"{(unc ? UncLongPathPrefix : LongPathPrefix)}{path}";
 
         private static string RandomString => $"{new Random(DateTime.UtcNow.Millisecond).Next():x}";
 

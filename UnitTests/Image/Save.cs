@@ -2,6 +2,8 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
@@ -11,7 +13,7 @@ namespace Chessar.UnitTests
         [TestMethod, TestCategory(nameof(Image))]
         public void Image_Save()
         {
-            var (path, _) = CreateLongTempFile();
+            var (path, _) = CreateLongTempFolder();
             var imagePath = Path.Combine(path, "1x1.bmp");
             var imagePathWithPrefix = WithPrefix(imagePath);
 
@@ -21,9 +23,18 @@ namespace Chessar.UnitTests
                 {
                     bitmap.Save(imagePath);
                 }
-                catch (NotSupportedException)
+                catch (ExternalException ex)
                 {
-                    bitmap.Save(imagePathWithPrefix);
+                    var edi = ExceptionDispatchInfo.Capture(ex);
+                    try
+                    {
+                        bitmap.Save(imagePathWithPrefix);
+                    }
+                    catch (NotSupportedException)
+                    {
+                        edi.Throw();
+                        throw;
+                    }
                 }
             }
 

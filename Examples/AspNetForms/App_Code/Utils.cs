@@ -2,6 +2,11 @@
 
 public static class Utils
 {
-    public static string CurrentFolderFullName =>
-        new DirectoryInfo(Directory.GetCurrentDirectory()).FullName;
+    public static string CurrentFolderFullName
+    {
+        get
+        {
+            return new DirectoryInfo(Directory.GetCurrentDirectory()).FullName;
+        }
+    }
 }

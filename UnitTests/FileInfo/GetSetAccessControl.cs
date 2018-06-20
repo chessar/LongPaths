@@ -8,19 +8,28 @@ namespace Chessar.UnitTests
 {
     partial class LongPathTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_SetAccessControl()
+        [TestMethod, TestCategory(nameof(FileInfo))]
+        public void FileInfo_GetSetAccessControl()
         {
             var (path, pathWithPrefix) = CreateLongTempFile();
+
+            var fi = new FileInfo(path);
+
+            var fs1 = fi.GetAccessControl();
+
+            IsNotNull(fs1);
+
             var fs = new FileSecurity();
             fs.AddAccessRule(new FileSystemAccessRule(WindowsIdentity.GetCurrent().Name,
                 FileSystemRights.FullControl, AccessControlType.Allow));
 
-            File.SetAccessControl(path, fs);
+            fi.SetAccessControl(fs);
 
-            var ds1 = File.GetAccessControl(pathWithPrefix);
+            fi.Refresh();
 
-            IsTrue(true);
+            var fs2 = fi.GetAccessControl();
+
+            IsNotNull(fs2);
         }
     }
 }

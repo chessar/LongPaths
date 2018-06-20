@@ -102,6 +102,33 @@
     <Compile Include="Directory\SetAccessControl.cs" />
     <Compile Include="Directory\Move.cs" />
     <Compile Include="Directory\SetGetCurrentDirectory.cs" />
+    <Compile Include="Examples\AspNetFormsUnitTests.cs" />
+    <Compile Include="FileInfo\AppendText.cs" />
+    <Compile Include="FileInfo\Attributes.cs" />
+    <Compile Include="FileInfo\CopyTo.cs" />
+    <Compile Include="FileInfo\Create.cs" />
+    <Compile Include="FileInfo\CreateText.cs" />
+    <Compile Include="FileInfo\Directory_DirectoryName.cs" />
+    <Compile Include="FileInfo\Delete.cs" />
+    <Compile Include="FileInfo\EncryptDecrypt.cs" />
+    <Compile Include="FileInfo\Extension.cs" />
+    <Compile Include="FileInfo\Exists.cs" />
+    <Compile Include="FileInfo\Length.cs" />
+    <Compile Include="FileInfo\IsReadOnly.cs" />
+    <Compile Include="FileInfo\FullName.cs" />
+    <Compile Include="FileInfo\GetSetAccessControl.cs" />
+    <Compile Include="FileInfo\MoveTo.cs" />
+    <Compile Include="FileInfo\Name.cs" />
+    <Compile Include="FileInfo\Open.cs" />
+    <Compile Include="FileInfo\OpenRead.cs" />
+    <Compile Include="FileInfo\OpenText.cs" />
+    <Compile Include="FileInfo\OpenWrite.cs" />
+    <Compile Include="FileInfo\Replace.cs" />
+    <Compile Include="FileInfo\Time.cs" />
+    <Compile Include="FileInfo\TimeUtc.cs" />
+    <Compile Include="FileSystemSecurity\FileSecurity.cs" />
+    <Compile Include="FileSystemSecurity\DirectorySecurity.cs" />
+    <Compile Include="File\Delete.cs" />
     <Compile Include="File\SetGetAttributes.cs" />
     <Compile Include="File\Exists.cs" />
     <Compile Include="File\EncryptDecrypt.cs" />
@@ -127,8 +154,11 @@
     <Compile Include="File\Move.cs" />
     <Compile Include="File\SetTime.cs" />
     <Compile Include="File\SetTimeUtc.cs" />
+    <Compile Include="IisExpress.cs" />
+    <Compile Include="Image\FromFile.cs" />
     <Compile Include="Image\Save.cs" />
     <Compile Include="LongPathTests.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Chessar.snk">

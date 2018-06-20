@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="_Default" %>
+﻿<%@ Page Language="C#" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
@@ -8,7 +8,7 @@
 </head>
 <body>
     <form id="Form1" runat="server">
-        <asp:Label runat="server" ID="Label1"></asp:Label>
+        <span>CurrentDirectoryInfo.FullName = <% = HttpUtility.HtmlEncode(Utils.CurrentFolderFullName) %></span>
     </form>
 </body>
 </html>

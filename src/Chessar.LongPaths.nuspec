@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>$description$</description>
     <summary>$description$</summary>
-    <releaseNotes>First pre-release</releaseNotes>
+    <releaseNotes>Pre-release. Changed the strategy for applying the patch: now types that do not support long paths are excluded.</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>long path jmp hook</tags>
     <dependencies>

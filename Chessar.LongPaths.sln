@@ -45,6 +45,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "AspNetForms", "Examples\Asp
 		VWDPort = "30879"
 		SlnRelativePath = "Examples\AspNetForms\"
 		DefaultWebSiteLanguage = "Visual C#"
+		StartServerOnDebug = "true"
 	EndProjectSection
 EndProject
 Global
