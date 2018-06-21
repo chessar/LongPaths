@@ -85,6 +85,7 @@ namespace Chessar.UnitTests
             try
             {
                 Stop();
+                Thread.Sleep(100);
                 process = Process.Start(info);
                 process.WaitForExit();
             }

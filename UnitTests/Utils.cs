@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Text;
 using System.Xml;
@@ -38,9 +37,7 @@ namespace Chessar.UnitTests
         internal static string LongFolderName { get; private set; }
         internal static string WithPrefix(string path, in bool unc = false)
             => $"{(unc ? UncLongPathPrefix : LongPathPrefix)}{path}";
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static string GenerateRandomString() => $"{new Random(DateTime.UtcNow.Millisecond).Next():x}";
-        internal static string RandomString => GenerateRandomString();
+        internal static string RandomString => Guid.NewGuid().ToString();
         internal static string RandomLongFolder => $"{LongTempFolder}{RandomString}";
         internal static string RandomLongTxtFile => $"{RandomLongFolder}.txt";
 

@@ -5,7 +5,7 @@ using System.Threading;
 using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
-namespace Chessar.UnitTests.Examples
+namespace Chessar.UnitTests
 {
     [TestClass]
     public sealed class AspNetFormsTests
@@ -58,13 +58,13 @@ namespace Chessar.UnitTests.Examples
 
             iis.Start(siteFolder, port);
 
-            Thread.Sleep(300);
+            Thread.Sleep(200);
         }
 
         [ClassCleanup]
         public static void Cleanup()
         {
-            Thread.Sleep(300);
+            Thread.Sleep(100);
 
             if (iis != null)
                 iis.Dispose();

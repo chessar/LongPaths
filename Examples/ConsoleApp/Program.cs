@@ -20,7 +20,7 @@ namespace ConsoleApp
             try
             {
                 var currentFolder = Directory.GetCurrentDirectory();
-                workFolder = Path.Combine(currentFolder, $"{new Random(DateTime.UtcNow.Millisecond).Next():x}");
+                workFolder = Path.Combine(currentFolder, Guid.NewGuid().ToString());
                 WriteLine($"Work folder:");
                 WriteLine(workFolder);
 
