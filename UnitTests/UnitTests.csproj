@@ -48,6 +48,8 @@
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -102,7 +104,7 @@
     <Compile Include="Directory\SetAccessControl.cs" />
     <Compile Include="Directory\Move.cs" />
     <Compile Include="Directory\SetGetCurrentDirectory.cs" />
-    <Compile Include="Examples\AspNetFormsUnitTests.cs" />
+    <Compile Include="Examples\AspNetFormsTests.cs" />
     <Compile Include="FileInfo\AppendText.cs" />
     <Compile Include="FileInfo\Attributes.cs" />
     <Compile Include="FileInfo\CopyTo.cs" />
@@ -159,6 +161,7 @@
     <Compile Include="Image\Save.cs" />
     <Compile Include="LongPathTests.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="XmlReader\Create.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Chessar.snk">

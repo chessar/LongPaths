@@ -4,11 +4,12 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    partial class LongPathTests
+    partial class ImageTests
     {
         [TestMethod, TestCategory(nameof(Image))]
         public void Image_Save()

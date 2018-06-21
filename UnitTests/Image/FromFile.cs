@@ -1,11 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
 using System.IO;
+using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    partial class LongPathTests
+    partial class ImageTests
     {
         [TestMethod, TestCategory(nameof(Image))]
         public void Image_FromFile()

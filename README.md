@@ -74,6 +74,7 @@ For the following list of ctors/methods, you must directly specify the prefix of
 * [`File.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.file.getaccesscontrol)
 * [`Directory.Move(String, String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.move)
 * [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
+* [`HttpResponse.TransmitFile(String[, Int64, Int64])`](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpresponse.transmitfile)
 
 for example:
 ```csharp

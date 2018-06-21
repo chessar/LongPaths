@@ -1,10 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    partial class LongPathTests
+    partial class DirectoryInfoTests
     {
         [TestMethod, TestCategory(nameof(DirectoryInfo))]
         public void DirectoryInfo_CreateSubdirectory()
@@ -12,7 +13,7 @@ namespace Chessar.UnitTests
             var (path, _) = CreateLongTempFolder();
 
             var s = Path.DirectorySeparatorChar;
-            var di = new DirectoryInfo(path).CreateSubdirectory($"{longFolderName}{s}{longFolderName}{s}{longFolderName}");
+            var di = new DirectoryInfo(path).CreateSubdirectory($"{LongFolderName}{s}{LongFolderName}{s}{LongFolderName}");
 
             IsNotNull(di);
             IsTrue(Directory.Exists(di.FullName));

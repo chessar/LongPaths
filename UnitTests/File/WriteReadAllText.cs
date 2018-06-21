@@ -1,25 +1,26 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    partial class LongPathTests
+    partial class FileTests
     {
         [TestMethod, TestCategory(nameof(File))]
         public void File_WriteReadAllText()
         {
             var (path, pathWithPrefix) = CreateLongTempFile();
 
-            File.WriteAllText(path, ten, enc);
+            File.WriteAllText(path, TenFileContent, Utf8WithoutBom);
 
             IsTrue(File.Exists(pathWithPrefix));
 
-            AreEqual(ten.Length, new FileInfo(pathWithPrefix).Length);
+            AreEqual(TenFileContent.Length, new FileInfo(pathWithPrefix).Length);
 
-            var text = File.ReadAllText(path, enc);
+            var text = File.ReadAllText(path, Utf8WithoutBom);
 
-            AreEqual(ten, text);
+            AreEqual(TenFileContent, text);
         }
     }
 }

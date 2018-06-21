@@ -1,11 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using System.Threading;
+using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    partial class LongPathTests
+    partial class FileTests
     {
         [TestMethod, TestCategory(nameof(File))]
         public void File_Copy() => FileCopy(false);
@@ -16,11 +16,10 @@ namespace Chessar.UnitTests
         private void FileCopy(in bool overwrite)
         {
             var (path, _) = CreateLongTempFile();
-            Thread.Sleep(10);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFile(!overwrite);
 
             if (overwrite)
-                File.WriteAllText(pathNewWithPrefix, ten, enc);
+                File.WriteAllText(pathNewWithPrefix, TenFileContent, Utf8WithoutBom);
 
             File.Copy(path, pathNew, overwrite);
 

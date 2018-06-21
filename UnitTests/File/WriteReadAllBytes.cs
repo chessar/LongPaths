@@ -1,18 +1,19 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections;
 using System.IO;
+using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    partial class LongPathTests
+    partial class FileTests
     {
         [TestMethod, TestCategory(nameof(File))]
         public void File_WriteReadAllBytes()
         {
             var (path, pathWithPrefix) = CreateLongTempFile();
 
-            var bytes = enc.GetBytes(ten);
+            var bytes = Utf8WithoutBom.GetBytes(TenFileContent);
 
             File.WriteAllBytes(path, bytes);
 

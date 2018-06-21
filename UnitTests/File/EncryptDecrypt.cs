@@ -1,16 +1,17 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    partial class LongPathTests
+    partial class FileTests
     {
         [TestMethod, TestCategory(nameof(File))]
         public void File_EncryptDecrypt()
         {
             var (path, pathWithPrefix) = CreateLongTempFile(true);
-            File.WriteAllText(pathWithPrefix, ten, enc);
+            File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);
 
             File.Encrypt(path);
 
