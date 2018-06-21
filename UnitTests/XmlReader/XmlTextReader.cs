@@ -9,31 +9,27 @@ namespace Chessar.UnitTests
     partial class XmlReaderTests
     {
         [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlReader_Create() => XmlReaderCreate(null);
+        public void XmlTextReader() => XmlTextReaderCtor(false);
 
         [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlReader_CreateWithSettings() => XmlReaderCreate(XmlSettings);
+        public void XmlTextReader_WithLongPrefix() => XmlTextReaderCtor(true);
 
-        [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlReader_CreateWithLongPrefix() => XmlReaderCreate(null, true);
-
-        private void XmlReaderCreate(XmlReaderSettings settings, in bool withLongPrefix = false)
+        private void XmlTextReaderCtor(in bool withLongPrefix)
         {
             var (path, pathWithPrefix) = CreateLongTempFile();
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);
             var xmlFile = withLongPrefix ? pathWithPrefix : path;
 
             string value = null;
-            using (var xmlReader = settings != null
-                ? XmlReader.Create(xmlFile) : XmlReader.Create(xmlFile, settings))
+            using (var xtr = new XmlTextReader(xmlFile))
             {
-                while (xmlReader.Read())
+                while (xtr.Read())
                 {
-                    if (xmlReader.NodeType == XmlNodeType.Element &&
-                        nameof(XmlNodeType.Element) == xmlReader.LocalName)
+                    if (xtr.NodeType == XmlNodeType.Element &&
+                        nameof(XmlNodeType.Element) == xtr.LocalName)
                     {
-                        xmlReader.Read();
-                        value = xmlReader.Value;
+                        xtr.Read();
+                        value = xtr.Value;
                         break;
                     }
                 }

@@ -22,4 +22,22 @@ namespace Chessar.UnitTests
 
     [TestClass]
     public sealed partial class XmlReaderTests { }
+
+    [TestClass]
+    public sealed partial class XDocumentTests { }
+
+    [TestClass]
+    public sealed partial class XmlDocumentTests { }
+
+    [TestClass]
+    public sealed partial class XmlWriterTests { }
+
+    [TestClass]
+    public sealed partial class XPathDocumentTests { }
+
+    [TestClass]
+    public sealed partial class StreamReaderTests { }
+
+    [TestClass]
+    public sealed partial class StreamWriterTests { }
 }

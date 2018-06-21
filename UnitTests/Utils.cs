@@ -32,6 +32,11 @@ namespace Chessar.UnitTests
             DtdProcessing = DtdProcessing.Parse,
             XmlResolver = null
         };
+        internal static readonly XmlWriterSettings XmlWSettings = new XmlWriterSettings
+        {
+            Encoding = Utf8WithoutBom,
+            OmitXmlDeclaration = true
+        };
         internal static string TempFolder { get; private set; }
         internal static string LongTempFolder { get; private set; }
         internal static string LongFolderName { get; private set; }

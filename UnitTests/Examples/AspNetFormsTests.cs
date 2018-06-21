@@ -45,7 +45,7 @@ namespace Chessar.UnitTests
             IsTrue(File.Exists(tempFile));
 
             var content = File.ReadAllText(tempFile, Utf8WithoutBom);
-            AreEqual(TenFileContent, content, false);
+            AreEqual(content, TenFileContent, false);
         }
 
         [ClassInitialize]
