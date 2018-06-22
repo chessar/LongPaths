@@ -1,14 +1,13 @@
 ﻿<%@ WebHandler Language="C#" Class="WriteFile" %>
 
-using System;
-using System.Linq;
 using System.Web;
 
 public sealed class WriteFile : DownloadHttpHandler
 {
-    public override void SendFile(HttpContext context)
+    public override void SendFile(HttpContext context, bool asNetwork, bool withPrefix)
     {
-        context.Response.WriteFile(Utils.CreateFileWithLongPath(),
-            context.Request.Params.AllKeys.Contains("readIntoMemory", StringComparer.OrdinalIgnoreCase));
+        var readIntoMemory = false;
+        bool.TryParse(context.Request.Params["readIntoMemory"], out readIntoMemory);
+        context.Response.WriteFile(Utils.CreateFileWithLongPath(asNetwork, withPrefix), readIntoMemory);
     }
 }

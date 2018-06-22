@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_GetDirectoryRoot()
+        [TestMethod]
+        public void Directory_GetDirectoryRoot() => DirectoryGetDirectoryRoot(false);
+
+        [TestMethod]
+        public void Directory_GetDirectoryRoot_UNC() => DirectoryGetDirectoryRoot(true);
+
+
+        private void DirectoryGetDirectoryRoot(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             var root1 = Directory.GetDirectoryRoot(path);
             var root2 = Directory.GetDirectoryRoot(pathWithPrefix);

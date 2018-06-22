@@ -7,14 +7,18 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_Extension()
+        [TestMethod]
+        public void DirectoryInfo_Extension() => DirectoryInfoExtension(false);
+
+        [TestMethod]
+        public void DirectoryInfo_Extension_UNC() => DirectoryInfoExtension(true);
+
+
+        private void DirectoryInfoExtension(in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFolder();
+            var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
 
-            var di = new DirectoryInfo(path);
-
-            AreEqual(string.Empty, di.Extension);
+            AreEqual(new DirectoryInfo(path).Extension, string.Empty);
         }
     }
 }

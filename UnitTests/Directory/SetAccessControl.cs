@@ -9,19 +9,24 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_SetAccessControl()
+        [TestMethod]
+        public void Directory_SetAccessControl() => DirectorySetAccessControl(false);
+
+        [TestMethod]
+        public void Directory_SetAccessControl_UNC() => DirectorySetAccessControl(true);
+
+
+        private void DirectorySetAccessControl(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+
             var ds = new DirectorySecurity();
             ds.AddAccessRule(new FileSystemAccessRule(WindowsIdentity.GetCurrent().Name,
                 FileSystemRights.FullControl, AccessControlType.Allow));
 
             Directory.SetAccessControl(path, ds);
 
-            var ds1 = Directory.GetAccessControl(pathWithPrefix);
-
-            IsTrue(true);
+            IsNotNull(Directory.GetAccessControl(pathWithPrefix));
         }
     }
 }

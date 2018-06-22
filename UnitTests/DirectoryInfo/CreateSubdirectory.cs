@@ -7,13 +7,20 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_CreateSubdirectory()
+        [TestMethod]
+        public void DirectoryInfo_CreateSubdirectory() => DirectoryInfoCreateSubdirectory(false);
+
+        [TestMethod]
+        public void DirectoryInfo_CreateSubdirectory_UNC() => DirectoryInfoCreateSubdirectory(true);
+
+
+        private void DirectoryInfoCreateSubdirectory(in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFolder();
+            var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             var s = Path.DirectorySeparatorChar;
-            var di = new DirectoryInfo(path).CreateSubdirectory($"{LongFolderName}{s}{LongFolderName}{s}{LongFolderName}");
+            var di = new DirectoryInfo(path)
+                .CreateSubdirectory($"{LongFolderName}{s}{LongFolderName}{s}{LongFolderName}");
 
             IsNotNull(di);
             IsTrue(Directory.Exists(di.FullName));

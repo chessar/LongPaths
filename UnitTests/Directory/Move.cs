@@ -7,13 +7,28 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_Move()
-        {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
-            var (pathNew, pathNewWithPrefix) = CreateLongTempFolder(true);
+        [TestMethod]
+        public void Directory_Move() => DirectoryMove(false, false);
 
-            Directory.Move(path, pathNew);
+        [TestMethod]
+        public void Directory_MoveWithLongPrefix() => DirectoryMove(true, false);
+
+        [TestMethod]
+        public void Directory_Move_UNC() => DirectoryMove(false, true);
+
+        [TestMethod]
+        public void Directory_MoveWithLongPrefix_UNC() => DirectoryMove(true, true);
+
+
+        private void DirectoryMove(in bool withPrefix, in bool asNetwork)
+        {
+            var (path, pathWithPrefix) = CreateLongTempFolder(false, asNetwork);
+            var (pathNew, pathNewWithPrefix) = CreateLongTempFolder(true, asNetwork);
+
+            if (withPrefix)
+                Directory.Move(pathWithPrefix, pathNewWithPrefix);
+            else
+                Directory.Move(path, pathNew);
 
             IsTrue(Directory.Exists(pathNewWithPrefix));
             IsFalse(Directory.Exists(pathWithPrefix));

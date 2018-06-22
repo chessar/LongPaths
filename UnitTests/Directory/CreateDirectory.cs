@@ -7,14 +7,21 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_CreateDirectory()
+        [TestMethod]
+        public void Directory_CreateDirectory() => DirectoryCreate(false);
+
+        [TestMethod]
+        public void Directory_CreateDirectory_UNC() => DirectoryCreate(true);
+
+
+        private void DirectoryCreate(in bool asNetwork)
         {
-            var path = RandomLongFolder;
+            var (path, pathWithPrefix) = CreateLongTempFolder(true, in asNetwork);
 
-            Directory.CreateDirectory(path);
+            var di = Directory.CreateDirectory(path);
 
-            IsTrue(Directory.Exists(WithPrefix(path)));
+            IsTrue(di?.Exists ?? false);
+            IsTrue(Directory.Exists(pathWithPrefix));
         }
     }
 }

@@ -7,12 +7,18 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_Root()
-        {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+        [TestMethod]
+        public void DirectoryInfo_Root() => DirectoryInfoRoot(false);
 
-            var root1 = new DirectoryInfo(path).Root.FullName;
+        [TestMethod]
+        public void DirectoryInfo_Root_UNC() => DirectoryInfoRoot(true);
+
+
+        private void DirectoryInfoRoot(in bool asNetwork)
+        {
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+
+            var root1 = new DirectoryInfo(path).Root?.FullName;
             var root2 = Directory.GetDirectoryRoot(pathWithPrefix);
 
             AreEqual(root1, root2);

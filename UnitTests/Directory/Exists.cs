@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_Exists()
+        [TestMethod]
+        public void Directory_Exists() => DirectoryExists(false);
+
+        [TestMethod]
+        public void Directory_Exists_UNC() => DirectoryExists(true);
+
+
+        private void DirectoryExists(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             IsTrue(Directory.Exists(path));
 

@@ -8,22 +8,29 @@ namespace Chessar.UnitTests
 {
     partial class XmlDocumentTests
     {
-        [TestMethod, TestCategory(nameof(XmlDocument))]
-        public void XmlDocument_Load() => XmlDocumentLoad(false);
+        [TestMethod]
+        public void XmlDocument_Load() => XmlDocumentLoad(false, false);
 
-        [TestMethod, TestCategory(nameof(XmlDocument))]
-        public void XmlDocument_LoadWithLongPrefix() => XmlDocumentLoad(true);
+        [TestMethod]
+        public void XmlDocument_Load_UNC() => XmlDocumentLoad(false, true);
 
-        private void XmlDocumentLoad(in bool withLongPrefix)
+        [TestMethod]
+        public void XmlDocument_LoadWithLongPrefix() => XmlDocumentLoad(true, false);
+
+        [TestMethod]
+        public void XmlDocument_LoadWithLongPrefix_UNC() => XmlDocumentLoad(true, true);
+
+
+        private void XmlDocumentLoad(in bool withPrefix, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);
-            var xmlFile = withLongPrefix ? pathWithPrefix : path;
+            var xmlFile = withPrefix ? pathWithPrefix : path;
 
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(xmlFile);
 
-            AreEqual(xmlDoc?.DocumentElement?.FirstChild?.FirstChild?.Value, "Value", false);
+            AreEqual(xmlDoc?.DocumentElement?.FirstChild?.FirstChild?.Value, "Value");
         }
     }
 }

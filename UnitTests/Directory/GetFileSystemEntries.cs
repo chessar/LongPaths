@@ -8,27 +8,32 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_GetFileSystemEntries()
+        [TestMethod]
+        public void Directory_GetFileSystemEntries() => DirectoryGetFs(false);
+
+        [TestMethod]
+        public void Directory_GetFileSystemEntries_UNC() => DirectoryGetFs(true);
+
+
+        private void DirectoryGetFs(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
-            foreach (var ch in "abc")
-                if (ch == 'a')
-                    Directory.CreateDirectory($"{pathWithPrefix}{s}{ch}");
+            foreach (var c in "abc")
+                if (c == 'a')
+                    Directory.CreateDirectory($"{pathWithPrefix}{s}{c}");
                 else
-                    File.CreateText($"{pathWithPrefix}{s}{ch}").Dispose();
+                    File.CreateText($"{pathWithPrefix}{s}{c}").Close();
             Directory.CreateDirectory($"{pathWithPrefix}{s}d");
-            File.CreateText($"{pathWithPrefix}{s}d{s}ad").Dispose();
+            File.CreateText($"{pathWithPrefix}{s}d{s}ad").Close();
 
-            var allNames = new StringBuilder();
+            var names = new StringBuilder();
             foreach (var f in Directory.GetFileSystemEntries(path, "a*", SearchOption.AllDirectories))
-                appendFolder(f);
+                append(f);
 
-            AreEqual("aad", allNames.ToString());
+            AreEqual(names.ToString(), "aad");
 
-            void appendFolder(string f) =>
-                allNames.Append(f.Substring(f.LastIndexOf(s) + 1));
+            void append(string f) => names.Append(f.Substring(f.LastIndexOf(s) + 1));
         }
     }
 }

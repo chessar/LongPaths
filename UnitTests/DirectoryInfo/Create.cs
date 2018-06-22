@@ -7,10 +7,15 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_Create()
+        [TestMethod]
+        public void DirectoryInfo_Create() => DirectoryInfoCreate(false);
+
+        [TestMethod]
+        public void DirectoryInfo_Create_UNC() => DirectoryInfoCreate(true);
+
+        private void DirectoryInfoCreate(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder(true);
+            var (path, pathWithPrefix) = CreateLongTempFolder(true, in asNetwork);
 
             new DirectoryInfo(path).Create();
 

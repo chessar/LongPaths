@@ -16,12 +16,13 @@ namespace Chessar.UnitTests
 
         internal const string
             LongPathPrefix = @"\\?\",
-            UncLongPathPrefix = LongPathPrefix + @"UNC\",
             TenFileContent = "0123456789",
             XmlContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Root>
   <Element attr=""aValue"">Value</Element>
 </Root>";
+        internal static readonly char[] prefixChars = { DirectorySeparatorChar, AltDirectorySeparatorChar,
+            '?', '.', ' ' };
         internal static readonly UTF8Encoding
             Utf8WithoutBom = new UTF8Encoding(false);
         internal const AccessControlSections defaultAcs =
@@ -40,8 +41,6 @@ namespace Chessar.UnitTests
         internal static string TempFolder { get; private set; }
         internal static string LongTempFolder { get; private set; }
         internal static string LongFolderName { get; private set; }
-        internal static string WithPrefix(string path, in bool unc = false)
-            => $"{(unc ? UncLongPathPrefix : LongPathPrefix)}{path}";
         internal static string RandomString => Guid.NewGuid().ToString();
         internal static string RandomLongFolder => $"{LongTempFolder}{RandomString}";
         internal static string RandomLongTxtFile => $"{RandomLongFolder}.txt";
@@ -53,7 +52,7 @@ namespace Chessar.UnitTests
         public static void Init(TestContext testContext)
 #pragma warning restore CS3001 // Argument type is not CLS-compliant
         {
-            TempFolder = Combine(GetTempPath(), RandomString).Trim('\\', '/', '?');
+            TempFolder = Combine(GetTempPath(), RandomString).Trim(prefixChars);
             if (!Directory.Exists(TempFolder))
                 Directory.CreateDirectory(TempFolder);
             LongFolderName = new string('a', 254);
@@ -69,26 +68,63 @@ namespace Chessar.UnitTests
             RemoveLongPathsPatch();
 
             if (Directory.Exists(TempFolder))
-                Directory.Delete(WithPrefix(TempFolder), true);
+                Directory.Delete(TempFolder.WithPrefix(), true);
         }
 
-        internal static (string, string) CreateLongTempFolder(in bool skipCreate = false)
+        internal static string ToNetworkPath(this string path)
+        {
+            if (path is null)
+                return null;
+            path = path.TrimStart();
+            if (path.Length < 2)
+                return path;
+
+            var s = DirectorySeparatorChar;
+
+            if ((path[0] == s ||
+                 path[0] == AltDirectorySeparatorChar) &&
+                (path[1] == s ||
+                 path[1] == AltDirectorySeparatorChar))
+            {
+                if (path.Length < 3)
+                    return path;
+                if (path[2] != '?')
+                    return path;
+                else if (path.Length > 7 && string.Equals("UNC", path.Substring(4, 3).ToUpperInvariant()))
+                    path = path.Substring(8);
+                else
+                    path = path.TrimStart(prefixChars);
+            }
+
+            if (path[1] == VolumeSeparatorChar)
+                path = $"localhost{s}{path[0]}${path.Substring(2)}";
+
+            return $"{s}{s}{path}";
+        }
+
+        internal static string WithPrefix(this string path) => path.AddLongPathPrefix();
+
+        internal static (string, string) CreateLongTempFolder(in bool skipCreate = false, in bool asNetwork = false)
         {
             var path = RandomLongFolder;
-            var pathWithPrefix = WithPrefix(path);
+            var pathWithPrefix = path.WithPrefix();
             if (!skipCreate)
                 Directory.CreateDirectory(pathWithPrefix);
-            return (path, pathWithPrefix);
+            if (asNetwork)
+                path = path.ToNetworkPath();
+            return (path, asNetwork ? path.AddLongPathPrefix() : pathWithPrefix);
         }
 
-        internal static (string, string) CreateLongTempFile(in bool skipCreate = false)
+        internal static (string, string) CreateLongTempFile(in bool skipCreate = false, in bool asNetwork = false)
         {
             var path = RandomLongTxtFile;
-            var pathWithPrefix = WithPrefix(path);
+            var pathWithPrefix = path.WithPrefix();
             Directory.CreateDirectory(GetDirectoryName(pathWithPrefix));
             if (!skipCreate)
                 File.CreateText(pathWithPrefix).Dispose();
-            return (path, pathWithPrefix);
+            if (asNetwork)
+                path = path.ToNetworkPath();
+            return (path, asNetwork ? path.AddLongPathPrefix() : pathWithPrefix);
         }
     }
 }

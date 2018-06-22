@@ -8,16 +8,24 @@ namespace Chessar.UnitTests
 {
     partial class XmlWriterTests
     {
-        [TestMethod, TestCategory(nameof(XmlWriter))]
-        public void XmlTextWriter() => XmlTextWriterCtor(false);
+        [TestMethod]
+        public void XmlTextWriter() => XmlTextWriterCtor(false, false);
 
-        [TestMethod, TestCategory(nameof(XmlWriter))]
-        public void XmlTextWriter_WithLongPrefix() => XmlTextWriterCtor(true);
+        [TestMethod]
+        public void XmlTextWriter_UNC() => XmlTextWriterCtor(false, true);
 
-        private void XmlTextWriterCtor(in bool withLongPrefix)
+        [TestMethod]
+        public void XmlTextWriter_WithLongPrefix() => XmlTextWriterCtor(true, false);
+
+        [TestMethod]
+        public void XmlTextWriter_WithLongPrefix_UNC() => XmlTextWriterCtor(true, true);
+
+
+        private void XmlTextWriterCtor(in bool withPrefix, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(true);
-            var xmlFile = withLongPrefix ? pathWithPrefix : path;
+            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
+
+            var xmlFile = withPrefix ? pathWithPrefix : path;
             using (var xtw = new XmlTextWriter(xmlFile, Utf8WithoutBom))
             {
                 xtw.WriteStartDocument();

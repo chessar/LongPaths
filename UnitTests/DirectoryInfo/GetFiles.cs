@@ -8,25 +8,30 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_GetFiles()
+        [TestMethod]
+        public void DirectoryInfo_GetFiles() => DirectoryInfoGetFiles(false);
+
+        [TestMethod]
+        public void DirectoryInfo_GetFiles_UNC() => DirectoryInfoGetFiles(true);
+
+
+        private void DirectoryInfoGetFiles(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
-            foreach (var ch in "abc")
-                File.CreateText($"{pathWithPrefix}{s}{ch}").Dispose();
+            foreach (var c in "abc")
+                File.CreateText($"{pathWithPrefix}{s}{c}").Dispose();
             Directory.CreateDirectory($"{pathWithPrefix}{s}d");
             File.CreateText($"{pathWithPrefix}{s}d{s}ad").Dispose();
 
             var di = new DirectoryInfo(path);
-            var allNames = new StringBuilder();
+            var names = new StringBuilder();
             foreach (var f in di.GetFiles("a*", SearchOption.AllDirectories))
-                appendFolder(f.FullName);
+                append(f.FullName);
 
-            AreEqual("aad", allNames.ToString());
+            AreEqual(names.ToString(), "aad");
 
-            void appendFolder(string f) =>
-                allNames.Append(f.Substring(f.LastIndexOf(s) + 1));
+            void append(string f) => names.Append(f.Substring(f.LastIndexOf(s) + 1));
         }
     }
 }

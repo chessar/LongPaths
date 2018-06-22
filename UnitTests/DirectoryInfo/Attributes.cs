@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_Attributes()
+        [TestMethod]
+        public void DirectoryInfo_Attributes() => DirectoryInfoAttributes(false);
+
+        [TestMethod]
+        public void DirectoryInfo_Attributes_UNC() => DirectoryInfoAttributes(true);
+
+
+        private void DirectoryInfoAttributes(in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFolder();
+            var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             var di = new DirectoryInfo(path);
             var attr = di.Attributes;

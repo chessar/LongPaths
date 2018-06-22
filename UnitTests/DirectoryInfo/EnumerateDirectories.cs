@@ -8,35 +8,45 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_EnumerateDirectoriesAll()
-            => AreEqual("abc", EnumerateFoldersInfo(false));
+        [TestMethod]
+        public void DirectoryInfo_EnumerateDirectoriesAll() => DirectoryInfoEnumerateDirectories(false, false);
 
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_EnumerateDirectoriesWithPattern()
-            => AreEqual("a", EnumerateFoldersInfo(true));
+        [TestMethod]
+        public void DirectoryInfo_EnumerateDirectoriesAll_UNC() => DirectoryInfoEnumerateDirectories(false, true);
 
-        private string EnumerateFoldersInfo(in bool withPattern)
+        [TestMethod]
+        public void DirectoryInfo_EnumerateDirectoriesWithPattern() => DirectoryInfoEnumerateDirectories(true, false);
+
+        [TestMethod]
+        public void DirectoryInfo_EnumerateDirectoriesWithPattern_UNC() => DirectoryInfoEnumerateDirectories(true, true);
+
+
+        private void DirectoryInfoEnumerateDirectories(in bool withPattern, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
             const string abc = "abc";
-            foreach (var ch in abc)
-                Directory.CreateDirectory($"{pathWithPrefix}{s}{ch}");
+            foreach (var c in abc)
+                Directory.CreateDirectory($"{pathWithPrefix}{s}{c}");
 
             var di = new DirectoryInfo(path);
-            var allNames = new StringBuilder();
+            var names = new StringBuilder();
             if (withPattern)
+            {
                 foreach (var d in di.EnumerateDirectories("a*"))
-                    appendFolder(d.FullName);
+                    append(d.FullName);
+
+                AreEqual(names.ToString(), "a");
+            }
             else
+            {
                 foreach (var d in di.EnumerateDirectories())
-                    appendFolder(d.FullName);
+                    append(d.FullName);
 
-            return allNames.ToString();
+                AreEqual(names.ToString(), "abc");
+            }
 
-            void appendFolder(string f) =>
-                allNames.Append(f.Substring(f.LastIndexOf(Path.DirectorySeparatorChar) + 1));
+            void append(string f) => names.Append(f.Substring(f.LastIndexOf(s) + 1));
         }
     }
 }

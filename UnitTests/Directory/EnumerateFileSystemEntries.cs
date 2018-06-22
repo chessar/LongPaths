@@ -8,37 +8,48 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_EnumerateFileSystemEntriesAll()
-            => AreEqual("abc", EnumerateFs(false));
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesAll() => DirectoryEnumerateFs(false, false);
 
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_EnumerateFileSystemEntriesWithPattern()
-            => AreEqual("a", EnumerateFs(true));
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesAll_UNC() => DirectoryEnumerateFs(false, true);
 
-        private string EnumerateFs(in bool withPattern)
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesWithPattern() => DirectoryEnumerateFs(true, false);
+
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesWithPattern_UNC() => DirectoryEnumerateFs(true, true);
+
+
+        private void DirectoryEnumerateFs(in bool withPattern, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
             const string abc = "abc";
-            foreach (var ch in abc)
-                if (ch == 'b')
-                    Directory.CreateDirectory($"{pathWithPrefix}{s}{ch}");
+            foreach (var c in abc)
+                if (c == 'b')
+                    Directory.CreateDirectory($"{pathWithPrefix}{s}{c}");
                 else
-                    File.CreateText($"{pathWithPrefix}{s}{ch}").Dispose();
+                    File.CreateText($"{pathWithPrefix}{s}{c}").Close();
 
-            var allNames = new StringBuilder();
+            var names = new StringBuilder();
+
             if (withPattern)
+            {
                 foreach (var d in Directory.EnumerateFileSystemEntries(path, "a*"))
-                    appendFolder(d);
+                    append(d);
+
+                AreEqual(names.ToString(), "a");
+            }
             else
+            {
                 foreach (var d in Directory.EnumerateFileSystemEntries(path))
-                    appendFolder(d);
+                    append(d);
 
-            return allNames.ToString();
+                AreEqual(names.ToString(), abc);
+            }
 
-            void appendFolder(string f) =>
-                allNames.Append(f.Substring(f.LastIndexOf(Path.DirectorySeparatorChar) + 1));
+            void append(string f) => names.Append(f.Substring(f.LastIndexOf(s) + 1));
         }
     }
 }

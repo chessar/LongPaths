@@ -8,28 +8,33 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_GetFileSystemInfos()
+        [TestMethod]
+        public void DirectoryInfo_GetFileSystemInfos() => DirectoryInfoGetFileSystemInfos(false);
+
+        [TestMethod]
+        public void DirectoryInfo_GetFileSystemInfos_UNC() => DirectoryInfoGetFileSystemInfos(true);
+
+
+        private void DirectoryInfoGetFileSystemInfos(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
-            foreach (var ch in "abc")
-                if (ch == 'a')
-                    Directory.CreateDirectory($"{pathWithPrefix}{s}{ch}");
+            foreach (var c in "abc")
+                if (c == 'a')
+                    Directory.CreateDirectory($"{pathWithPrefix}{s}{c}");
                 else
-                    File.CreateText($"{pathWithPrefix}{s}{ch}").Dispose();
+                    File.CreateText($"{pathWithPrefix}{s}{c}").Close();
             Directory.CreateDirectory($"{pathWithPrefix}{s}d");
-            File.CreateText($"{pathWithPrefix}{s}d{s}ad").Dispose();
+            File.CreateText($"{pathWithPrefix}{s}d{s}ad").Close();
 
             var di = new DirectoryInfo(path);
-            var allNames = new StringBuilder();
+            var names = new StringBuilder();
             foreach (var f in di.GetFileSystemInfos("a*", SearchOption.AllDirectories))
-                appendFolder(f.FullName);
+                append(f.FullName);
 
-            AreEqual("aad", allNames.ToString());
+            AreEqual(names.ToString(), "aad");
 
-            void appendFolder(string f) =>
-                allNames.Append(f.Substring(f.LastIndexOf(s) + 1));
+            void append(string f) => names.Append(f.Substring(f.LastIndexOf(s) + 1));
         }
     }
 }

@@ -1,9 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Drawing;
 using System.IO;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
@@ -11,33 +8,27 @@ namespace Chessar.UnitTests
 {
     partial class ImageTests
     {
-        [TestMethod, TestCategory(nameof(Image))]
-        public void Image_Save()
-        {
-            var (path, _) = CreateLongTempFolder();
-            var imagePath = Path.Combine(path, "1x1.bmp");
-            var imagePathWithPrefix = WithPrefix(imagePath);
+        [TestMethod]
+        public void Image_Save() => ImageSave(false, false);
 
-            using (var bitmap = new Bitmap(1, 1))
-            {
-                try
-                {
-                    bitmap.Save(imagePath);
-                }
-                catch (ExternalException ex)
-                {
-                    var edi = ExceptionDispatchInfo.Capture(ex);
-                    try
-                    {
-                        bitmap.Save(imagePathWithPrefix);
-                    }
-                    catch (NotSupportedException)
-                    {
-                        edi.Throw();
-                        throw;
-                    }
-                }
-            }
+        [TestMethod]
+        public void Image_Save_UNC() => ImageSave(false, true);
+
+        [TestMethod]
+        public void Image_SaveWithLongPrefix() => ImageSave(true, false);
+
+        [TestMethod]
+        public void Image_SaveWithLongPrefix_UNC() => ImageSave(true, true);
+
+
+        private void ImageSave(in bool withPrefix, in bool asNetwork)
+        {
+            var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
+            var imagePath = Path.Combine(path, "1x1.bmp");
+            var imagePathWithPrefix = imagePath.WithPrefix();
+
+            using (var bmp = new Bitmap(1, 1))
+                bmp.Save(withPrefix ? imagePathWithPrefix : imagePath);
 
             IsTrue(File.Exists(imagePathWithPrefix));
         }

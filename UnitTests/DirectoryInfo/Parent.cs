@@ -7,17 +7,23 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_Parent()
+        [TestMethod]
+        public void DirectoryInfo_Parent() => DirectoryInfoParent(false);
+
+        [TestMethod]
+        public void DirectoryInfo_Parent_UNC() => DirectoryInfoParent(true);
+
+
+        private void DirectoryInfoParent(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 
-            var di = new DirectoryInfo(path).Parent;
-            var parent = Directory.GetParent(pathWithPrefix);
+            var parent1 = new DirectoryInfo(path).Parent;
+            var parent2 = Directory.GetParent(pathWithPrefix);
 
-            IsNotNull(di);
-            IsNotNull(parent);
-            AreEqual(di.FullName, parent.FullName);
+            IsNotNull(parent1);
+            IsNotNull(parent2);
+            AreEqual(parent1.FullName, parent2.FullName);
         }
     }
 }

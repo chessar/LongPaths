@@ -7,12 +7,24 @@ namespace Chessar.UnitTests
 {
     partial class FileSystemSecurityTests
     {
-        [TestMethod, TestCategory(nameof(FileSystemSecurity))]
-        public void DirectorySecurity()
-        {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+        [TestMethod]
+        public void DirectorySecurity() => CreateDirectorySecurity(false, false);
 
-            var ds = new DirectorySecurity(path, AccessControlSections.Access);
+        [TestMethod]
+        public void DirectorySecurity_WithLongPrefix() => CreateDirectorySecurity(true, false);
+
+        [TestMethod]
+        public void DirectorySecurity_UNC() => CreateDirectorySecurity(false, true);
+
+        [TestMethod]
+        public void DirectorySecurity_WithLongPrefix_UNC() => CreateDirectorySecurity(true, true);
+
+
+        private void CreateDirectorySecurity(in bool withPrefix, in bool asNetwork)
+        {
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+
+            var ds = new DirectorySecurity(withPrefix ? pathWithPrefix : path, AccessControlSections.Access);
 
             IsNotNull(ds);
         }

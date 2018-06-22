@@ -8,16 +8,23 @@ namespace Chessar.UnitTests
 {
     partial class XmlDocumentTests
     {
-        [TestMethod, TestCategory(nameof(XmlDocument))]
-        public void XmlDocument_Save() => XmlDocumentSave(false);
+        [TestMethod]
+        public void XmlDocument_Save() => XmlDocumentSave(false, false);
 
-        [TestMethod, TestCategory(nameof(XmlDocument))]
-        public void XmlDocument_SaveWithLongPrefix() => XmlDocumentSave(true);
+        [TestMethod]
+        public void XmlDocument_Save_UNC() => XmlDocumentSave(false, true);
 
-        private void XmlDocumentSave(in bool withLongPrefix = false)
+        [TestMethod]
+        public void XmlDocument_SaveWithLongPrefix() => XmlDocumentSave(true, false);
+
+        [TestMethod]
+        public void XmlDocument_SaveWithLongPrefix_UNC() => XmlDocumentSave(true, true);
+
+
+        private void XmlDocumentSave(in bool withPrefix, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
-            var xmlFile = withLongPrefix ? pathWithPrefix : path;
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var xmlFile = withPrefix ? pathWithPrefix : path;
 
             var xmlDoc = new XmlDocument();
             var rootNode = xmlDoc.CreateNode(XmlNodeType.Element, "Root", "");

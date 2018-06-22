@@ -8,20 +8,30 @@ namespace Chessar.UnitTests
 {
     partial class XmlReaderTests
     {
-        [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlReader_Create() => XmlReaderCreate(null);
+        [TestMethod]
+        public void XmlReader_Create() => XmlReaderCreate(false);
 
-        [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlReader_CreateWithSettings() => XmlReaderCreate(XmlSettings);
+        [TestMethod]
+        public void XmlReader_Create_UNC() => XmlReaderCreate(true);
 
-        [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlReader_CreateWithLongPrefix() => XmlReaderCreate(null, true);
+        [TestMethod]
+        public void XmlReader_CreateWithSettings() => XmlReaderCreate(false, XmlSettings);
 
-        private void XmlReaderCreate(XmlReaderSettings settings, in bool withLongPrefix = false)
+        [TestMethod]
+        public void XmlReader_CreateWithSettings_UNC() => XmlReaderCreate(true, XmlSettings);
+
+        [TestMethod]
+        public void XmlReader_CreateWithLongPrefix() => XmlReaderCreate(false, withPrefix: true);
+
+        [TestMethod]
+        public void XmlReader_CreateWithLongPrefix_UNC() => XmlReaderCreate(true, withPrefix: true);
+
+
+        private void XmlReaderCreate(in bool asNetwork, XmlReaderSettings settings = null, in bool withPrefix = false)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);
-            var xmlFile = withLongPrefix ? pathWithPrefix : path;
+            var xmlFile = withPrefix ? pathWithPrefix : path;
 
             string value = null;
             using (var xmlReader = settings != null
@@ -39,7 +49,7 @@ namespace Chessar.UnitTests
                 }
             }
 
-            AreEqual(value, "Value", false);
+            AreEqual(value, "Value");
         }
     }
 }

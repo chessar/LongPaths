@@ -1,43 +1,48 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Drawing;
+using System.IO;
+using System.Security.AccessControl;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Chessar.UnitTests
 {
-    [TestClass]
+    [TestClass, TestCategory(nameof(Directory))]
     public sealed partial class DirectoryTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(DirectoryInfo))]
     public sealed partial class DirectoryInfoTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(File))]
     public sealed partial class FileTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(FileInfo))]
     public sealed partial class FileInfoTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(FileSystemSecurity))]
     public sealed partial class FileSystemSecurityTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(Image))]
     public sealed partial class ImageTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(XmlReader))]
     public sealed partial class XmlReaderTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(XDocument))]
     public sealed partial class XDocumentTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(XmlDocument))]
     public sealed partial class XmlDocumentTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(XmlWriter))]
     public sealed partial class XmlWriterTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(XPathDocument))]
     public sealed partial class XPathDocumentTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(StreamReader))]
     public sealed partial class StreamReaderTests { }
 
-    [TestClass]
+    [TestClass, TestCategory(nameof(StreamWriter))]
     public sealed partial class StreamWriterTests { }
 }

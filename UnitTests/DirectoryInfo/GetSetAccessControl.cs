@@ -9,10 +9,16 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_GetSetAccessControl()
+        [TestMethod]
+        public void DirectoryInfo_GetSetAccessControl() => DirectoryInfoGetSetAccessControl(false);
+
+        [TestMethod]
+        public void DirectoryInfo_GetSetAccessControl_UNC() => DirectoryInfoGetSetAccessControl(true);
+
+
+        private void DirectoryInfoGetSetAccessControl(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             var di = new DirectoryInfo(path);
 
@@ -25,7 +31,6 @@ namespace Chessar.UnitTests
                 FileSystemRights.FullControl, AccessControlType.Allow));
 
             di.SetAccessControl(ds);
-
             di.Refresh();
 
             var ds2 = di.GetAccessControl();

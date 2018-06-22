@@ -8,19 +8,30 @@ namespace Chessar.UnitTests
 {
     partial class XmlWriterTests
     {
-        [TestMethod, TestCategory(nameof(XmlWriter))]
-        public void XmlWriter_Create() => XmlWriterCreate(null);
+        [TestMethod]
+        public void XmlWriter_Create() => XmlWriterCreate(false);
 
-        [TestMethod, TestCategory(nameof(XmlWriter))]
-        public void XmlWriter_CreateWithSettings() => XmlWriterCreate(XmlWSettings);
+        [TestMethod]
+        public void XmlWriter_Create_UNC() => XmlWriterCreate(true);
 
-        [TestMethod, TestCategory(nameof(XmlWriter))]
-        public void XmlWriter_CreateWithLongPrefix() => XmlWriterCreate(null, true);
+        [TestMethod]
+        public void XmlWriter_CreateWithSettings() => XmlWriterCreate(false, XmlWSettings);
 
-        private void XmlWriterCreate(XmlWriterSettings settings, in bool withLongPrefix = false)
+        [TestMethod]
+        public void XmlWriter_CreateWithSettings_UNC() => XmlWriterCreate(true, XmlWSettings);
+
+        [TestMethod]
+        public void XmlWriter_CreateWithLongPrefix() => XmlWriterCreate(false, withPrefix: true);
+
+        [TestMethod]
+        public void XmlWriter_CreateWithLongPrefix_UNC() => XmlWriterCreate(true, withPrefix: true);
+
+
+        private void XmlWriterCreate(in bool asNetwork, XmlWriterSettings settings = null, in bool withPrefix = false)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(true);
-            var xmlFile = withLongPrefix ? pathWithPrefix : path;
+            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
+
+            var xmlFile = withPrefix ? pathWithPrefix : path;
             using (var xw = settings != null ? XmlWriter.Create(xmlFile) : XmlWriter.Create(xmlFile, settings))
             {
                 xw.WriteStartDocument();

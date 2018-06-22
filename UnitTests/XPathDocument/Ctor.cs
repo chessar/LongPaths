@@ -9,20 +9,30 @@ namespace Chessar.UnitTests
 {
     partial class XPathDocumentTests
     {
-        [TestMethod, TestCategory(nameof(XPathDocument))]
-        public void XPathDocument() => XPathDocumentCtor(false);
+        [TestMethod]
+        public void XPathDocument() => XPathDocumentCtor(false, false, false);
 
-        [TestMethod, TestCategory(nameof(XPathDocument))]
-        public void XPathDocument_WithSpaces() => XPathDocumentCtor(true);
+        [TestMethod]
+        public void XPathDocument_UNC() => XPathDocumentCtor(false, false, true);
 
-        [TestMethod, TestCategory(nameof(XPathDocument))]
-        public void XPathDocument_WithLongPrefix() => XPathDocumentCtor(false, true);
+        [TestMethod]
+        public void XPathDocument_WithSpaces() => XPathDocumentCtor(true, false, false);
 
-        private void XPathDocumentCtor(in bool withSpaces, in bool withLongPrefix = false)
+        [TestMethod]
+        public void XPathDocument_WithSpaces_UNC() => XPathDocumentCtor(true, false, true);
+
+        [TestMethod]
+        public void XPathDocument_WithLongPrefix() => XPathDocumentCtor(false, true, false);
+
+        [TestMethod]
+        public void XPathDocument_WithLongPrefix_UNC() => XPathDocumentCtor(false, true, true);
+
+
+        private void XPathDocumentCtor(in bool withSpaces, in bool withPrefix, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);
-            var xmlFile = withLongPrefix ? pathWithPrefix : path;
+            var xmlFile = withPrefix ? pathWithPrefix : path;
 
             var xpd = withSpaces
                 ? new XPathDocument(xmlFile, XmlSpace.Preserve)
@@ -31,7 +41,7 @@ namespace Chessar.UnitTests
             var xpn = xpd.CreateNavigator();
             var node = xpn.SelectSingleNode("//Element");
 
-            AreEqual(node?.InnerXml, "Value", false);
+            AreEqual(node?.InnerXml, "Value");
         }
     }
 }

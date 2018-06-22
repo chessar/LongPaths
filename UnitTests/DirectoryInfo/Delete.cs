@@ -7,25 +7,29 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_DeleteEmpty() =>
-            IsFalse(Directory.Exists(DeleteFolderInfo(false)));
+        [TestMethod]
+        public void DirectoryInfo_DeleteEmpty() => DirectoryInfoDelete(false, false);
 
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_DeleteNotEmpty() =>
-            IsFalse(Directory.Exists(DeleteFolderInfo(true)));
+        [TestMethod]
+        public void DirectoryInfo_DeleteEmpty_UNC() => DirectoryInfoDelete(false, true);
 
-        private string DeleteFolderInfo(in bool recursive)
+        [TestMethod]
+        public void DirectoryInfo_DeleteNotEmpty() => DirectoryInfoDelete(true, false);
+
+        [TestMethod]
+        public void DirectoryInfo_DeleteNotEmpty_UNC() => DirectoryInfoDelete(true, true);
+
+
+        private void DirectoryInfoDelete(in bool recursive, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+
             if (recursive)
-            {
-                File.CreateText($"{path}{Path.DirectorySeparatorChar}file.txt").Dispose();
-                new DirectoryInfo(path).Delete(true);
-            }
-            else
-                new DirectoryInfo(path).Delete();
-            return pathWithPrefix;
+                File.CreateText($"{path}{Path.DirectorySeparatorChar}file.txt").Close();
+
+            new DirectoryInfo(path).Delete(recursive);
+
+            IsFalse(Directory.Exists(pathWithPrefix));
         }
     }
 }

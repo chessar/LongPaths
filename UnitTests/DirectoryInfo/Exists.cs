@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryInfoTests
     {
-        [TestMethod, TestCategory(nameof(DirectoryInfo))]
-        public void DirectoryInfo_Exists()
+        [TestMethod]
+        public void DirectoryInfo_Exists() => DirectoryInfoExists(false);
+
+        [TestMethod]
+        public void DirectoryInfo_Exists_UNC() => DirectoryInfoExists(true);
+
+
+        private void DirectoryInfoExists(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             var di = new DirectoryInfo(path);
 

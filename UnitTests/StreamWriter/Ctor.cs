@@ -7,15 +7,22 @@ namespace Chessar.UnitTests
 {
     partial class StreamWriterTests
     {
-        [TestMethod, TestCategory(nameof(StreamWriter))]
-        public void StreamWriter() => StreamWriterCtor(false);
+        [TestMethod]
+        public void StreamWriter() => StreamWriterCtor(false, false);
 
-        [TestMethod, TestCategory(nameof(StreamWriter))]
-        public void StreamWriter_WithAppend() => StreamWriterCtor(true);
+        [TestMethod]
+        public void StreamWriter_UNC() => StreamWriterCtor(false, true);
 
-        private void StreamWriterCtor(in bool append)
+        [TestMethod]
+        public void StreamWriter_WithAppend() => StreamWriterCtor(true, false);
+
+        [TestMethod]
+        public void StreamWriter_WithAppend_UNC() => StreamWriterCtor(true, true);
+
+
+        private void StreamWriterCtor(in bool append, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(!append);
+            var (path, pathWithPrefix) = CreateLongTempFile(!append, in asNetwork);
             if (append)
                 File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);
 

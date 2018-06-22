@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_GetParent()
+        [TestMethod]
+        public void Directory_GetParent() => DirectoryGetParent(false);
+
+        [TestMethod]
+        public void Directory_GetParent_UNC() => DirectoryGetParent(true);
+
+
+        private void DirectoryGetParent(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder();
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             var parent1 = Directory.GetParent(path);
             var parent2 = Directory.GetParent(pathWithPrefix);

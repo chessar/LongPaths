@@ -1,51 +1,133 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using HtmlAgilityPack;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Chessar.UnitTests
 {
-    [TestClass]
+    [TestClass, TestCategory("AspNetForms")]
     public sealed class AspNetFormsTests
     {
-        private static readonly IisExpress iis = new IisExpress();
-        private const int port = 30879;
-        private const string category = "AspNetForms";
-
-        [TestMethod, TestCategory(category)]
+        [TestMethod]
         public void AspNetForms_Handler()
         {
             string fullPath = null;
-            using (var wc = new WebClient())
-                fullPath = wc.DownloadString($"http://localhost:{port}/Handler.ashx");
+
+            try
+            {
+                using (var wc = new WebClient())
+                    fullPath = wc.DownloadString($"http://localhost:{port}/Handler.ashx");
+            }
+            catch (WebException wex) when (HandlerWebException(wex))
+            { }
 
             IsNotNull(fullPath);
             IsTrue(fullPath.StartsWith(LongPathPrefix));
         }
 
-        [TestMethod, TestCategory(category)]
-        public void AspNetForms_WriteFile() => AspNetFormsDownloadFile(false);
+        [TestMethod]
+        public void AspNetForms_WriteFile() => AspNetFormsDownloadFile();
 
-        [TestMethod, TestCategory(category)]
-        public void AspNetForms_WriteFileIntoMemory() => AspNetFormsDownloadFile(false, true);
+        [TestMethod]
+        public void AspNetForms_WriteFile_UNC() => AspNetFormsDownloadFile(asNetwork: true);
 
-        [TestMethod, TestCategory(category)]
-        public void AspNetForms_TransmitFile() => AspNetFormsDownloadFile(true);
+        [TestMethod]
+        public void AspNetForms_WriteFileWithLongPrefix() => AspNetFormsDownloadFile(withPrefix: true);
 
-        private static void AspNetFormsDownloadFile(in bool transmit, in bool readIntoMemory = false)
+        [TestMethod]
+        public void AspNetForms_WriteFileWithLongPrefix_UNC() => AspNetFormsDownloadFile(asNetwork: true, withPrefix: true);
+
+        [TestMethod]
+        public void AspNetForms_WriteFileIntoMemory() => AspNetFormsDownloadFile(readIntoMemory: true);
+
+        [TestMethod]
+        public void AspNetForms_WriteFileIntoMemory_UNC() => AspNetFormsDownloadFile(asNetwork: true, readIntoMemory: true);
+
+        [TestMethod]
+        public void AspNetForms_TransmitFile() => AspNetFormsDownloadFile(transmit: true);
+
+        [TestMethod]
+        public void AspNetForms_TransmitFile_UNC() => AspNetFormsDownloadFile(asNetwork: true, transmit: true);
+
+        [TestMethod]
+        public void AspNetForms_TransmitFileWithLongPrefix() => AspNetFormsDownloadFile(transmit: true, withPrefix: true);
+
+        [TestMethod]
+        public void AspNetForms_TransmitFileWithLongPrefix_UNC() => AspNetFormsDownloadFile(asNetwork: true, transmit: true, withPrefix: true);
+
+
+        private static void AspNetFormsDownloadFile(in bool asNetwork = false,
+            in bool transmit = false, in bool readIntoMemory = false, in bool withPrefix = false)
         {
             var tempFile = Path.GetTempFileName();
-            var query = readIntoMemory ? $"?{nameof(readIntoMemory)}=true" : string.Empty;
+            var query = !transmit && readIntoMemory ? $"?{nameof(readIntoMemory)}=true" : string.Empty;
+            if (asNetwork)
+                query = $"{query}{(query.Length == 0 ? '?' : '&')}unc=true";
+            if (withPrefix)
+                query = $"{query}{(query.Length == 0 ? '?' : '&')}{nameof(withPrefix)}=true";
             var handler = transmit ? "Transmit" : "Write";
-            using (var wc = new WebClient())
-                wc.DownloadFile($"http://localhost:{port}/{handler}File.ashx{query}", tempFile);
+
+            try
+            {
+                using (var wc = new WebClient())
+                    wc.DownloadFile($"http://localhost:{port}/{handler}File.ashx{query}", tempFile);
+            }
+            catch (WebException wex) when (HandlerWebException(wex))
+            { }
 
             IsTrue(File.Exists(tempFile));
 
             var content = File.ReadAllText(tempFile, Utf8WithoutBom);
-            AreEqual(content, TenFileContent, false);
+            AreEqual(content, TenFileContent);
+        }
+
+        private static readonly IisExpress iis = new IisExpress();
+        private const int port = 30879;
+        private static readonly Regex multiLines =
+            new Regex(@"(\s*\r??\n\s*){2,}", RegexOptions.Compiled | RegexOptions.Multiline);
+
+        private static string HtmlToPlainText(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return html;
+            try
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(html);
+                var text = doc.DocumentNode.SelectSingleNode("//body").InnerText;
+                if (string.IsNullOrWhiteSpace(text))
+                    return html;
+                return multiLines.Replace(text, Environment.NewLine);
+            }
+            catch
+            {
+                return html;
+            }
+        }
+
+        private static bool HandlerWebException(WebException wex)
+        {
+            string error = null;
+
+            try
+            {
+                using (var sr = new StreamReader(wex.Response.GetResponseStream()))
+                    error = sr.ReadToEnd();
+
+                if (error != null)
+                    error = HtmlToPlainText(error);
+            }
+            catch { }
+
+            if (error != null)
+                throw new WebException(error, wex, wex.Status, wex.Response);
+
+            return false;
         }
 
         [ClassInitialize]

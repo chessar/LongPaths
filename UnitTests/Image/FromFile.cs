@@ -8,17 +8,25 @@ namespace Chessar.UnitTests
 {
     partial class ImageTests
     {
-        [TestMethod, TestCategory(nameof(Image))]
-        public void Image_FromFile()
+        [TestMethod]
+        public void Image_FromFile() => ImageFromFile(false);
+
+        [TestMethod]
+        public void Image_FromFile_UNC() => ImageFromFile(true);
+
+
+        private void ImageFromFile(in bool asNetwork)
         {
+            const string name = "1x1.bmp";
+
             var shortTempPath = Path.GetTempPath();
-            var shortImagePath = Path.Combine(shortTempPath, "1x1.bmp");
+            var shortImagePath = Path.Combine(shortTempPath, name);
             using (var bitmap = new Bitmap(1, 1))
                 bitmap.Save(shortImagePath);
 
-            var (path, _) = CreateLongTempFolder();
-            var imagePath = Path.Combine(path, "1x1.bmp");
-            var imagePathWithPrefix = WithPrefix(imagePath);
+            var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
+            var imagePath = Path.Combine(path, name);
+            var imagePathWithPrefix = imagePath.WithPrefix();
 
             new FileInfo(shortImagePath).MoveTo(imagePathWithPrefix);
 

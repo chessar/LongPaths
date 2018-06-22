@@ -8,17 +8,24 @@ namespace Chessar.UnitTests
 {
     partial class XmlReaderTests
     {
-        [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlTextReader() => XmlTextReaderCtor(false);
+        [TestMethod]
+        public void XmlTextReader() => XmlTextReaderCtor(false, false);
 
-        [TestMethod, TestCategory(nameof(XmlReader))]
-        public void XmlTextReader_WithLongPrefix() => XmlTextReaderCtor(true);
+        [TestMethod]
+        public void XmlTextReader_UNC() => XmlTextReaderCtor(false, true);
 
-        private void XmlTextReaderCtor(in bool withLongPrefix)
+        [TestMethod]
+        public void XmlTextReader_WithLongPrefix() => XmlTextReaderCtor(true, false);
+
+        [TestMethod]
+        public void XmlTextReader_WithLongPrefix_UNC() => XmlTextReaderCtor(true, true);
+
+
+        private void XmlTextReaderCtor(in bool withPrefix, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);
-            var xmlFile = withLongPrefix ? pathWithPrefix : path;
+            var xmlFile = withPrefix ? pathWithPrefix : path;
 
             string value = null;
             using (var xtr = new XmlTextReader(xmlFile))
@@ -35,7 +42,7 @@ namespace Chessar.UnitTests
                 }
             }
 
-            AreEqual(value, "Value", false);
+            AreEqual(value, "Value");
         }
     }
 }

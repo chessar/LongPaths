@@ -7,13 +7,25 @@ namespace Chessar.UnitTests
 {
     partial class DirectoryTests
     {
-        [TestMethod, TestCategory(nameof(Directory))]
-        public void Directory_GetAccessControl()
-        {
-            var (path, _) = CreateLongTempFolder();
+        [TestMethod]
+        public void Directory_GetAccessControl() => DirectoryGetAccessControl(false, false);
 
-            var acl1 = Directory.GetAccessControl(path);
-            var acl2 = Directory.GetAccessControl(path, defaultAcs);
+        [TestMethod]
+        public void Directory_GetAccessControlWithLongPrefix() => DirectoryGetAccessControl(true, false);
+
+        [TestMethod]
+        public void Directory_GetAccessControl_UNC() => DirectoryGetAccessControl(false, true);
+
+        [TestMethod]
+        public void Directory_GetAccessControlWithLongPrefix_UNC() => DirectoryGetAccessControl(true, true);
+
+
+        private void DirectoryGetAccessControl(in bool withPrefix, in bool asNetwork)
+        {
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+
+            var acl1 = Directory.GetAccessControl(withPrefix ? pathWithPrefix : path);
+            var acl2 = Directory.GetAccessControl(withPrefix ? pathWithPrefix : path, defaultAcs);
 
             IsNotNull(acl1);
             IsNotNull(acl2);
