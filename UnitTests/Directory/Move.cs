@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void Directory_MoveWithLongPrefix_UNC() => DirectoryMove(true, true);
 
 
-        private void DirectoryMove(in bool withPrefix, in bool asNetwork)
+        private static void DirectoryMove(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(false, asNetwork);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFolder(true, asNetwork);

@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_MoveToWithLongPrefix_UNC() => DirectoryInfoMoveTo(true, true);
 
 
-        private void DirectoryInfoMoveTo(in bool withPrefix, in bool asNetwork)
+        private static void DirectoryInfoMoveTo(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFolder(true, in asNetwork);

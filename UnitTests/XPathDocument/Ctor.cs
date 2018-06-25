@@ -28,7 +28,7 @@ namespace Chessar.UnitTests
         public void XPathDocument_WithLongPrefix_UNC() => XPathDocumentCtor(false, true, true);
 
 
-        private void XPathDocumentCtor(in bool withSpaces, in bool withPrefix, in bool asNetwork)
+        private static void XPathDocumentCtor(in bool withSpaces, in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);

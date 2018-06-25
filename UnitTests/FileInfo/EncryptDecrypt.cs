@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void FileInfo_EncryptDecrypt_UNC() => FileInfoEncryptDecrypt(true);
 
 
-        private void FileInfoEncryptDecrypt(in bool asNetwork)
+        private static void FileInfoEncryptDecrypt(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
             File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);

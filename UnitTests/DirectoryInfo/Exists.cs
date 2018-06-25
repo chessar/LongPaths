@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_Exists_UNC() => DirectoryInfoExists(true);
 
 
-        private void DirectoryInfoExists(in bool asNetwork)
+        private static void DirectoryInfoExists(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void Directory_CreateDirectory_UNC() => DirectoryCreate(true);
 
 
-        private void DirectoryCreate(in bool asNetwork)
+        private static void DirectoryCreate(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(true, in asNetwork);
 

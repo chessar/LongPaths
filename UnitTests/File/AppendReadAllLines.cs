@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void File_AppendReadAllLines_UNC() => FileAppendReadAllLines(true);
 
 
-        private void FileAppendReadAllLines(in bool asNetwork)
+        private static void FileAppendReadAllLines(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
 

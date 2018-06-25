@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void Directory_DeleteNotEmpty_UNC() => DirectoryDelete(true, true);
 
 
-        private void DirectoryDelete(in bool recursive, in bool asNetwork)
+        private static void DirectoryDelete(in bool recursive, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

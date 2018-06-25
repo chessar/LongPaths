@@ -27,7 +27,7 @@ namespace Chessar.UnitTests
         public void XDocument_LoadWithOptions_UNC() => XDocumentLoad(true, false, true);
 
 
-        private void XDocumentLoad(in bool withOptions, in bool withPrefix, in bool asNetwork)
+        private static void XDocumentLoad(in bool withOptions, in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);

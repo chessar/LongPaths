@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void Image_SaveWithLongPrefix_UNC() => ImageSave(true, true);
 
 
-        private void ImageSave(in bool withPrefix, in bool asNetwork)
+        private static void ImageSave(in bool withPrefix, in bool asNetwork)
         {
             var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
             var imagePath = Path.Combine(path, "1x1.bmp");

@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void FileInfo_NameFullName_UNC() => FileInfoNameFullName(true);
 
 
-        private void FileInfoNameFullName(in bool asNetwork)
+        private static void FileInfoNameFullName(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 

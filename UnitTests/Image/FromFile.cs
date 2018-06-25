@@ -15,7 +15,7 @@ namespace Chessar.UnitTests
         public void Image_FromFile_UNC() => ImageFromFile(true);
 
 
-        private void ImageFromFile(in bool asNetwork)
+        private static void ImageFromFile(in bool asNetwork)
         {
             const string name = "1x1.bmp";
 

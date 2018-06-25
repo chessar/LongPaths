@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void Directory_GetSetTimeUtc_UNC() => DirectoryGetSetTime(true, true);
 
 
-        private void DirectoryGetSetTime(in bool isUtc, in bool asNetwork)
+        private static void DirectoryGetSetTime(in bool isUtc, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void File_OpenRead_UNC() => FileOpenRead(true);
 
 
-        private void FileOpenRead(in bool asNetwork)
+        private static void FileOpenRead(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 

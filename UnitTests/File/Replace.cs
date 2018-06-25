@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void File_Replace_UNC() => FileReplace(true);
 
 
-        private void FileReplace(in bool asNetwork)
+        private static void FileReplace(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);

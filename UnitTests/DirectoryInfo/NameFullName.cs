@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_NameFullName_UNC() => DirectoryInfoNameFullName(true);
 
 
-        private void DirectoryInfoNameFullName(in bool asNetwork)
+        private static void DirectoryInfoNameFullName(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

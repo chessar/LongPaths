@@ -15,7 +15,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_GetFileSystemInfos_UNC() => DirectoryInfoGetFileSystemInfos(true);
 
 
-        private void DirectoryInfoGetFileSystemInfos(in bool asNetwork)
+        private static void DirectoryInfoGetFileSystemInfos(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;

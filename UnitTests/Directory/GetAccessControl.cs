@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void Directory_GetAccessControlWithLongPrefix_UNC() => DirectoryGetAccessControl(true, true);
 
 
-        private void DirectoryGetAccessControl(in bool withPrefix, in bool asNetwork)
+        private static void DirectoryGetAccessControl(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void XmlTextReader_WithLongPrefix_UNC() => XmlTextReaderCtor(true, true);
 
 
-        private void XmlTextReaderCtor(in bool withPrefix, in bool asNetwork)
+        private static void XmlTextReaderCtor(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);

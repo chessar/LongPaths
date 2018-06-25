@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_TimeUtc_UNC() => DirectoryInfoTime(true, true);
 
 
-        private void DirectoryInfoTime(in bool isUtc, in bool asNetwork)
+        private static void DirectoryInfoTime(in bool isUtc, in bool asNetwork)
         {
             var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
 

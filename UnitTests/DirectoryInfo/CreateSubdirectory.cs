@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_CreateSubdirectory_UNC() => DirectoryInfoCreateSubdirectory(true);
 
 
-        private void DirectoryInfoCreateSubdirectory(in bool asNetwork)
+        private static void DirectoryInfoCreateSubdirectory(in bool asNetwork)
         {
             var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
 

@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void FileInfo_MoveTo_UNC() => FileInfoMoveTo(true);
 
 
-        private void FileInfoMoveTo(in bool asNetwork)
+        private static void FileInfoMoveTo(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFile(true, in asNetwork);

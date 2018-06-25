@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void Directory_SetCurrentDirectoryWithLongPrefix_UNC() => DirectorySetCurrentDirectory(true, true);
 
 
-        private void DirectorySetCurrentDirectory(in bool withPrefix, in bool asNetwork)
+        private static void DirectorySetCurrentDirectory(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

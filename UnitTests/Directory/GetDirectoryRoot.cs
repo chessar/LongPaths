@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void Directory_GetDirectoryRoot_UNC() => DirectoryGetDirectoryRoot(true);
 
 
-        private void DirectoryGetDirectoryRoot(in bool asNetwork)
+        private static void DirectoryGetDirectoryRoot(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

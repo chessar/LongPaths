@@ -27,7 +27,7 @@ namespace Chessar.UnitTests
         public void XmlWriter_CreateWithLongPrefix_UNC() => XmlWriterCreate(true, withPrefix: true);
 
 
-        private void XmlWriterCreate(in bool asNetwork, XmlWriterSettings settings = null, in bool withPrefix = false)
+        private static void XmlWriterCreate(in bool asNetwork, XmlWriterSettings settings = null, in bool withPrefix = false)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
 

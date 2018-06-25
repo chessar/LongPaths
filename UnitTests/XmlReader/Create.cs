@@ -27,7 +27,7 @@ namespace Chessar.UnitTests
         public void XmlReader_CreateWithLongPrefix_UNC() => XmlReaderCreate(true, withPrefix: true);
 
 
-        private void XmlReaderCreate(in bool asNetwork, XmlReaderSettings settings = null, in bool withPrefix = false)
+        private static void XmlReaderCreate(in bool asNetwork, XmlReaderSettings settings = null, in bool withPrefix = false)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);

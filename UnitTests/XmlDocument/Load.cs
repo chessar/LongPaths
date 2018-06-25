@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void XmlDocument_LoadWithLongPrefix_UNC() => XmlDocumentLoad(true, true);
 
 
-        private void XmlDocumentLoad(in bool withPrefix, in bool asNetwork)
+        private static void XmlDocumentLoad(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, XmlContent, Utf8WithoutBom);

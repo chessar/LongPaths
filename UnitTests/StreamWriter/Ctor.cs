@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void StreamWriter_WithAppend_UNC() => StreamWriterCtor(true, true);
 
 
-        private void StreamWriterCtor(in bool append, in bool asNetwork)
+        private static void StreamWriterCtor(in bool append, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(!append, in asNetwork);
             if (append)

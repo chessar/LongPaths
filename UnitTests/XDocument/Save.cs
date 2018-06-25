@@ -27,7 +27,7 @@ namespace Chessar.UnitTests
         public void XDocument_SaveWithOptions_UNC() => XDocumentSave(true, false, true);
 
 
-        private void XDocumentSave(in bool withOptions, in bool withPrefix, in bool asNetwork)
+        private static void XDocumentSave(in bool withOptions, in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             var xmlFile = withPrefix ? pathWithPrefix : path;

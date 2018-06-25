@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void FileInfo_IsReadOnly_UNC() => FileInfoIsReadOnly(true);
 
 
-        private void FileInfoIsReadOnly(in bool asNetwork)
+        private static void FileInfoIsReadOnly(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 

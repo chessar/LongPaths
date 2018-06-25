@@ -54,6 +54,9 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Trinet.Core.IO.Ntfs, Version=4.1.1.0, Culture=neutral, PublicKeyToken=0aeaaa20a328a46c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Trinet.Core.IO.Ntfs.4.1.1\lib\net462\Trinet.Core.IO.Ntfs.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -128,6 +131,9 @@
     <Compile Include="FileSystemSecurity\FileSecurity.cs" />
     <Compile Include="FileSystemSecurity\DirectorySecurity.cs" />
     <Compile Include="File\Delete.cs" />
+    <Compile Include="File\ReadAllBytes.cs" />
+    <Compile Include="File\ReadAllLines.cs" />
+    <Compile Include="File\ReadAllText.cs" />
     <Compile Include="File\SetGetAttributes.cs" />
     <Compile Include="File\Exists.cs" />
     <Compile Include="File\EncryptDecrypt.cs" />
@@ -156,6 +162,11 @@
     <Compile Include="LongPathTests.cs" />
     <Compile Include="StreamReader\Ctor.cs" />
     <Compile Include="StreamWriter\Ctor.cs" />
+    <Compile Include="Trinet.Core.IO.Ntfs.FileSystem\AlternateDataStreamExists.cs" />
+    <Compile Include="Trinet.Core.IO.Ntfs.FileSystem\DeleteAlternateDataStream.cs" />
+    <Compile Include="Trinet.Core.IO.Ntfs.FileSystem\FileSystemTests.cs" />
+    <Compile Include="Trinet.Core.IO.Ntfs.FileSystem\GetAlternateDataStream.cs" />
+    <Compile Include="Trinet.Core.IO.Ntfs.FileSystem\ListAlternateDataStreams.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="XDocument\Save.cs" />
     <Compile Include="XDocument\Load.cs" />

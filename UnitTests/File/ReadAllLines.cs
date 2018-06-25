@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections;
 using System.IO;
-using System.Linq;
 using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
@@ -10,13 +9,13 @@ namespace Chessar.UnitTests
     partial class FileTests
     {
         [TestMethod]
-        public void File_ReadLines() => FileReadLines(false);
+        public void File_ReadAllLines() => FileReadAllLines(false);
 
         [TestMethod]
-        public void File_ReadLines_UNC() => FileReadLines(true);
+        public void File_ReadAllLines_UNC() => FileReadAllLines(true);
 
 
-        private static void FileReadLines(in bool asNetwork)
+        private static void FileReadAllLines(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
@@ -24,7 +23,7 @@ namespace Chessar.UnitTests
 
             File.WriteAllLines(pathWithPrefix, lines, Utf8WithoutBom);
 
-            var lines1 = File.ReadLines(path, Utf8WithoutBom).ToArray();
+            var lines1 = File.ReadAllLines(path, Utf8WithoutBom);
 
             IsTrue(StructuralComparisons.StructuralEqualityComparer.Equals(lines, lines1));
         }

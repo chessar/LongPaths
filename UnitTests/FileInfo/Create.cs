@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void FileInfo_Create_UNC() => FileInfoCreate(true);
 
 
-        private void FileInfoCreate(in bool asNetwork)
+        private static void FileInfoCreate(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
 

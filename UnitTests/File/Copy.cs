@@ -19,7 +19,7 @@ namespace Chessar.UnitTests
         [TestMethod]
         public void File_CopyOverwrite_UNC() => FileCopy(true, true);
 
-        private void FileCopy(in bool overwrite, in bool asNetwork)
+        private static void FileCopy(in bool overwrite, in bool asNetwork)
         {
             var (path, _) = CreateLongTempFile(asNetwork: in asNetwork);
             var (pathNew, pathNewWithPrefix) = CreateLongTempFile(!overwrite, in asNetwork);

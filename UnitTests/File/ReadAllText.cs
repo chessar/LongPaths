@@ -8,22 +8,19 @@ namespace Chessar.UnitTests
     partial class FileTests
     {
         [TestMethod]
-        public void File_Open() => FileOpen(false);
+        public void File_ReadAllText() => FileReadAllText(false);
 
         [TestMethod]
-        public void File_Open_UNC() => FileOpen(true);
+        public void File_ReadAllText_UNC() => FileReadAllText(true);
 
 
-
-        private static void FileOpen(in bool asNetwork)
+        private static void FileReadAllText(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
-            using (var fs = File.Open(path, FileMode.Truncate, FileAccess.Write))
-                fs.WriteByte(100);
+            File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);
 
-            IsTrue(File.Exists(pathWithPrefix));
-            AreEqual(new FileInfo(pathWithPrefix).Length, 1);
+            AreEqual(File.ReadAllText(path, Utf8WithoutBom), TenFileContent);
         }
     }
 }

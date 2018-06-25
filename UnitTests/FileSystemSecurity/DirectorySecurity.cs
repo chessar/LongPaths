@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void DirectorySecurity_WithLongPrefix_UNC() => CreateDirectorySecurity(true, true);
 
 
-        private void CreateDirectorySecurity(in bool withPrefix, in bool asNetwork)
+        private static void CreateDirectorySecurity(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

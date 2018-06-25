@@ -16,7 +16,7 @@ namespace Chessar.UnitTests
         public void File_SetAccessControl_UNC() => FileSetAccessControl(true);
 
 
-        private void FileSetAccessControl(in bool asNetwork)
+        private static void FileSetAccessControl(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             var fs = new FileSecurity();

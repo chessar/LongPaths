@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void FileInfo_TimeUtc_UNC() => FileInfoTime(true, true);
 
 
-        private void FileInfoTime(in bool isUtc, in bool asNetwork)
+        private static void FileInfoTime(in bool isUtc, in bool asNetwork)
         {
             var (path, _) = CreateLongTempFile(asNetwork: in asNetwork);
 

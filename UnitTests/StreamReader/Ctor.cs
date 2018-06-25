@@ -27,7 +27,7 @@ namespace Chessar.UnitTests
         public void StreamReader_WithDetectEncoding_UNC() => StreamReaderCtor(true, withDetectEncoding: true);
 
 
-        private void StreamReaderCtor(in bool asNetwork, Encoding enc = null, in bool withDetectEncoding = false)
+        private static void StreamReaderCtor(in bool asNetwork, Encoding enc = null, in bool withDetectEncoding = false)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);

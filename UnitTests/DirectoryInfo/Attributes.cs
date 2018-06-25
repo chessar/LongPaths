@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_Attributes_UNC() => DirectoryInfoAttributes(true);
 
 
-        private void DirectoryInfoAttributes(in bool asNetwork)
+        private static void DirectoryInfoAttributes(in bool asNetwork)
         {
             var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
 

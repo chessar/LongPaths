@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void XmlDocument_SaveWithLongPrefix_UNC() => XmlDocumentSave(true, true);
 
 
-        private void XmlDocumentSave(in bool withPrefix, in bool asNetwork)
+        private static void XmlDocumentSave(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             var xmlFile = withPrefix ? pathWithPrefix : path;

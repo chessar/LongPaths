@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void File_Exists_UNC() => FileExists(true);
 
 
-        private void FileExists(in bool asNetwork)
+        private static void FileExists(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 

@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void FileInfo_Delete_UNC() => FileInfoDelete(true);
 
 
-        private void FileInfoDelete(in bool asNetwork)
+        private static void FileInfoDelete(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 

@@ -14,7 +14,7 @@ namespace Chessar.UnitTests
         public void FileInfo_Length_UNC() => FileInfoLength(true);
 
 
-        private void FileInfoLength(in bool asNetwork)
+        private static void FileInfoLength(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);

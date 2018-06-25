@@ -20,7 +20,7 @@ namespace Chessar.UnitTests
         public void FileSecurity_WithLongPrefix_UNC() => CreateFileSecurity(true, true);
 
 
-        private void CreateFileSecurity(in bool withPrefix, in bool asNetwork)
+        private static void CreateFileSecurity(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 

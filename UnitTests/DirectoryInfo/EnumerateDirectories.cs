@@ -21,7 +21,7 @@ namespace Chessar.UnitTests
         public void DirectoryInfo_EnumerateDirectoriesWithPattern_UNC() => DirectoryInfoEnumerateDirectories(true, true);
 
 
-        private void DirectoryInfoEnumerateDirectories(in bool withPattern, in bool asNetwork)
+        private static void DirectoryInfoEnumerateDirectories(in bool withPattern, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
