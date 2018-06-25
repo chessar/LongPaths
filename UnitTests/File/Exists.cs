@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_Exists()
+        [TestMethod]
+        public void File_Exists() => FileExists(false);
+
+        [TestMethod]
+        public void File_Exists_UNC() => FileExists(true);
+
+
+        private void FileExists(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             IsTrue(File.Exists(path));
 

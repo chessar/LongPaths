@@ -7,14 +7,20 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_Extension()
+        [TestMethod]
+        public void FileInfo_Extension() => FileInfoExtension(false);
+
+        [TestMethod]
+        public void FileInfo_Extension_UNC() => FileInfoExtension(true);
+
+
+        private void FileInfoExtension(in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFile(true);
+            var (path, _) = CreateLongTempFile(true, in asNetwork);
 
             var fi = new FileInfo(path);
 
-            AreEqual(".txt", fi.Extension);
+            AreEqual(fi.Extension, ".txt");
         }
     }
 }

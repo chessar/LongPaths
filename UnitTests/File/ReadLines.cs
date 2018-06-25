@@ -9,10 +9,16 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_ReadLines()
+        [TestMethod]
+        public void File_ReadLines() => FileReadLines(false);
+
+        [TestMethod]
+        public void File_ReadLines_UNC() => FileReadLines(true);
+
+
+        private void FileReadLines(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             string[] lines = { TenFileContent };
 

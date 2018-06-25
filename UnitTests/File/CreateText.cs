@@ -7,17 +7,23 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_CreateText()
+        [TestMethod]
+        public void File_CreateText() => FileCreateText(false);
+
+        [TestMethod]
+        public void File_CreateText_UNC() => FileCreateText(true);
+
+
+        private void FileCreateText(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(true);
+            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
 
             using (var sw = File.CreateText(path))
                 sw.Write(TenFileContent);
 
             IsTrue(File.Exists(pathWithPrefix));
-            AreEqual(TenFileContent.Length, new FileInfo(pathWithPrefix).Length);
-            AreEqual(TenFileContent, File.ReadAllText(pathWithPrefix, Utf8WithoutBom));
+            AreEqual(new FileInfo(pathWithPrefix).Length, TenFileContent.Length);
+            AreEqual(File.ReadAllText(pathWithPrefix, Utf8WithoutBom), TenFileContent);
         }
     }
 }

@@ -8,27 +8,67 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_Time()
+        [TestMethod]
+        public void FileInfo_Time() => FileInfoTime(false, false);
+
+        [TestMethod]
+        public void FileInfo_Time_UNC() => FileInfoTime(false, true);
+
+        [TestMethod]
+        public void FileInfo_TimeUtc() => FileInfoTime(true, false);
+
+        [TestMethod]
+        public void FileInfo_TimeUtc_UNC() => FileInfoTime(true, true);
+
+
+        private void FileInfoTime(in bool isUtc, in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFile();
+            var (path, _) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
 
-            AreEqual(fi.CreationTime, fi.LastWriteTime);
-            AreEqual(fi.CreationTime, fi.LastAccessTime);
-            AreEqual(fi.LastAccessTime, fi.LastWriteTime);
+            if (isUtc)
+            {
+                AreEqual(fi.CreationTimeUtc, fi.LastWriteTimeUtc);
+                AreEqual(fi.CreationTimeUtc, fi.LastAccessTimeUtc);
+                AreEqual(fi.LastAccessTimeUtc, fi.LastWriteTimeUtc);
+            }
+            else
+            {
+                AreEqual(fi.CreationTime, fi.LastWriteTime);
+                AreEqual(fi.CreationTime, fi.LastAccessTime);
+                AreEqual(fi.LastAccessTime, fi.LastWriteTime);
+            }
 
-            var d = DateTime.Now;
+            var d = isUtc ? DateTime.UtcNow : DateTime.Now;
 
-            fi.CreationTime = d;
-            fi.LastAccessTime = d;
-            fi.LastWriteTime = d;
+            if (isUtc)
+            {
+                fi.CreationTime = d;
+                fi.LastAccessTime = d;
+                fi.LastWriteTime = d;
+            }
+            else
+            {
+                fi.CreationTimeUtc = d;
+                fi.LastAccessTimeUtc = d;
+                fi.LastWriteTimeUtc = d;
+            }
+
             fi.Refresh();
 
-            AreEqual(fi.CreationTime, d);
-            AreEqual(fi.CreationTime, d);
-            AreEqual(fi.LastAccessTime, d);
+            if (isUtc)
+            {
+                AreEqual(fi.CreationTimeUtc, d);
+                AreEqual(fi.CreationTimeUtc, d);
+                AreEqual(fi.LastAccessTimeUtc, d);
+            }
+            else
+            {
+                AreEqual(fi.CreationTime, d);
+                AreEqual(fi.CreationTime, d);
+                AreEqual(fi.LastAccessTime, d);
+            }
         }
     }
 }

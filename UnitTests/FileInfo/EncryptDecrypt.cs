@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_EncryptDecrypt()
+        [TestMethod]
+        public void FileInfo_EncryptDecrypt() => FileInfoEncryptDecrypt(false);
+
+        [TestMethod]
+        public void FileInfo_EncryptDecrypt_UNC() => FileInfoEncryptDecrypt(true);
+
+
+        private void FileInfoEncryptDecrypt(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(true);
+            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
             File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);
 
             var fi = new FileInfo(path);

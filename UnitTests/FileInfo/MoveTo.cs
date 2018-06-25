@@ -7,11 +7,17 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_MoveTo()
+        [TestMethod]
+        public void FileInfo_MoveTo() => FileInfoMoveTo(false);
+
+        [TestMethod]
+        public void FileInfo_MoveTo_UNC() => FileInfoMoveTo(true);
+
+
+        private void FileInfoMoveTo(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
-            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(true);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(true, in asNetwork);
 
             var fi = new FileInfo(path);
 

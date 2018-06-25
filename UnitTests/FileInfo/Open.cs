@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_Open()
+        [TestMethod]
+        public void FileInfo_Open() => FileInfoOpen(false);
+
+        [TestMethod]
+        public void FileInfo_Open_UNC() => FileInfoOpen(true);
+
+
+        private void FileInfoOpen(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
 
@@ -20,7 +26,7 @@ namespace Chessar.UnitTests
             fi.Refresh();
 
             IsTrue(fi.Exists);
-            AreEqual(1, fi.Length);
+            AreEqual(fi.Length, 1);
         }
     }
 }

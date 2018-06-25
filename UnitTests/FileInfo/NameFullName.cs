@@ -8,26 +8,20 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_Delete() => FileInfoDelete(false);
+        public void FileInfo_NameFullName() => FileInfoNameFullName(false);
 
         [TestMethod]
-        public void FileInfo_Delete_UNC() => FileInfoDelete(true);
+        public void FileInfo_NameFullName_UNC() => FileInfoNameFullName(true);
 
 
-        private void FileInfoDelete(in bool asNetwork)
+        private void FileInfoNameFullName(in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
 
-            IsTrue(File.Exists(pathWithPrefix));
-            IsTrue(fi.Exists);
-
-            fi.Delete();
-            fi.Refresh();
-
-            IsFalse(File.Exists(pathWithPrefix));
-            IsFalse(fi.Exists);
+            AreEqual(fi.Name, Path.GetFileName(pathWithPrefix));
+            AreEqual(fi.FullName, pathWithPrefix);
         }
     }
 }

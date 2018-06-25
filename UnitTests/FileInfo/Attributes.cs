@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_Attributes()
+        [TestMethod]
+        public void FileInfo_Attributes() => FileInfoAttributes(false);
+
+        [TestMethod]
+        public void FileInfo_Attributes_UNC() => FileInfoAttributes(true);
+
+
+        private void FileInfoAttributes(in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFile();
+            var (path, _) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
             var attr = fi.Attributes;

@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_OpenText()
+        [TestMethod]
+        public void FileInfo_OpenText() => FileInfoOpenText(false);
+
+        [TestMethod]
+        public void FileInfo_OpenText_UNC() => FileInfoOpenText(true);
+
+
+        private void FileInfoOpenText(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
 

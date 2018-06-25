@@ -9,10 +9,16 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_SetAccessControl()
+        [TestMethod]
+        public void File_SetAccessControl() => FileSetAccessControl(false);
+
+        [TestMethod]
+        public void File_SetAccessControl_UNC() => FileSetAccessControl(true);
+
+
+        private void FileSetAccessControl(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             var fs = new FileSecurity();
             fs.AddAccessRule(new FileSystemAccessRule(WindowsIdentity.GetCurrent().Name,
                 FileSystemRights.FullControl, AccessControlType.Allow));

@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_IsReadOnly()
+        [TestMethod]
+        public void FileInfo_IsReadOnly() => FileInfoIsReadOnly(false);
+
+        [TestMethod]
+        public void FileInfo_IsReadOnly_UNC() => FileInfoIsReadOnly(true);
+
+
+        private void FileInfoIsReadOnly(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
 

@@ -7,13 +7,25 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_GetAccessControl()
-        {
-            var (path, _) = CreateLongTempFile();
+        [TestMethod]
+        public void File_GetAccessControl() => FileGetAccessControl(false, false);
 
-            var acl1 = File.GetAccessControl(path);
-            var acl2 = File.GetAccessControl(path, defaultAcs);
+        [TestMethod]
+        public void File_GetAccessControl_UNC() => FileGetAccessControl(false, true);
+
+        [TestMethod]
+        public void File_GetAccessControlWithLongPrefix() => FileGetAccessControl(true, false);
+
+        [TestMethod]
+        public void File_GetAccessControlWithLongPrefix_UNC() => FileGetAccessControl(true, true);
+
+
+        private void FileGetAccessControl(in bool withPrefix, in bool asNetwork)
+        {
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+
+            var acl1 = File.GetAccessControl(withPrefix ? pathWithPrefix : path);
+            var acl2 = File.GetAccessControl(withPrefix ? pathWithPrefix : path, defaultAcs);
 
             IsNotNull(acl1);
             IsNotNull(acl2);

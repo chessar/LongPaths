@@ -8,10 +8,16 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_WriteReadAllLines()
+        [TestMethod]
+        public void File_WriteReadAllLines() => FileWriteReadAllLines(false);
+
+        [TestMethod]
+        public void File_WriteReadAllLines_UNC() => FileWriteReadAllLines(true);
+
+
+        private void FileWriteReadAllLines(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             string[] lines = { TenFileContent };
 
@@ -19,7 +25,7 @@ namespace Chessar.UnitTests
 
             IsTrue(File.Exists(pathWithPrefix));
 
-            var lines1 = File.ReadAllLines(path, Utf8WithoutBom);
+            var lines1 = File.ReadAllLines(pathWithPrefix, Utf8WithoutBom);
 
             IsTrue(StructuralComparisons.StructuralEqualityComparer.Equals(lines, lines1));
         }

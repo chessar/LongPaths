@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_SetGetAttributes()
+        [TestMethod]
+        public void File_SetGetAttributes() => FileSetAccessControl(false);
+
+        [TestMethod]
+        public void File_SetGetAttributes_UNC() => FileSetAccessControl(true);
+
+
+        private void FileSetGetAttributes(in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFile();
+            var (path, _) = CreateLongTempFile(asNetwork: in asNetwork);
 
             File.SetAttributes(path, FileAttributes.Normal);
 

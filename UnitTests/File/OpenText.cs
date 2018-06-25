@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_OpenText()
+        [TestMethod]
+        public void File_OpenText() => FileOpenText(false);
+
+        [TestMethod]
+        public void File_OpenText_UNC() => FileOpenText(true);
+
+
+        private void FileOpenText(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var s = string.Empty;
             using (var sr = File.OpenText(path))

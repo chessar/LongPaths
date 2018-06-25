@@ -7,11 +7,17 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_Move()
+        [TestMethod]
+        public void File_Move() => FileMove(false);
+
+        [TestMethod]
+        public void File_Move_UNC() => FileMove(true);
+
+
+        void FileMove(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
-            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(true);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(true, in asNetwork);
 
             File.Move(path, pathNew);
 

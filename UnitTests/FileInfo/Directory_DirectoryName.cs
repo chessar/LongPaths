@@ -7,10 +7,16 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_Directory_DirectoryName()
+        [TestMethod]
+        public void FileInfo_Directory_DirectoryName() => FileInfoDirectoryDirectoryName(false);
+
+        [TestMethod]
+        public void FileInfo_Directory_DirectoryName_UNC() => FileInfoDirectoryDirectoryName(true);
+
+
+        private void FileInfoDirectoryDirectoryName(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
             var di = fi.Directory;

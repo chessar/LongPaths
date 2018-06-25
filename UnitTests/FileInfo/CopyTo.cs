@@ -7,16 +7,23 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_CopyTo() => FileInfoCopyTo(false);
+        [TestMethod]
+        public void FileInfo_CopyTo() => FileInfoCopyTo(false, false);
 
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_CopyToOverwrite() => FileInfoCopyTo(true);
+        [TestMethod]
+        public void FileInfo_CopyTo_UNC() => FileInfoCopyTo(false, true);
 
-        private void FileInfoCopyTo(in bool overwrite)
+        [TestMethod]
+        public void FileInfo_CopyToOverwrite() => FileInfoCopyTo(true, false);
+
+        [TestMethod]
+        public void FileInfo_CopyToOverwrite_UNC() => FileInfoCopyTo(true, true);
+
+
+        private void FileInfoCopyTo(in bool overwrite, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
-            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(!overwrite);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(!overwrite, in asNetwork);
 
             var fi = new FileInfo(path);
 
@@ -29,7 +36,7 @@ namespace Chessar.UnitTests
 
             IsTrue(File.Exists(pathWithPrefix));
             IsTrue(File.Exists(pathNewWithPrefix));
-            AreEqual(fi.Length, fiNew.Length);
+            AreEqual(fiNew.Length, fi.Length);
         }
     }
 }

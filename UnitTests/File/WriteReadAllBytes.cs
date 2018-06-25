@@ -8,10 +8,16 @@ namespace Chessar.UnitTests
 {
     partial class FileTests
     {
-        [TestMethod, TestCategory(nameof(File))]
-        public void File_WriteReadAllBytes()
+        [TestMethod]
+        public void File_WriteReadAllBytes() => FileWriteReadAllBytes(false);
+
+        [TestMethod]
+        public void File_WriteReadAllBytes_UNC() => FileWriteReadAllBytes(true);
+
+
+        private void FileWriteReadAllBytes(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var bytes = Utf8WithoutBom.GetBytes(TenFileContent);
 
@@ -19,7 +25,7 @@ namespace Chessar.UnitTests
 
             IsTrue(File.Exists(pathWithPrefix));
 
-            AreEqual(bytes.Length, new FileInfo(pathWithPrefix).Length);
+            AreEqual(new FileInfo(pathWithPrefix).Length, bytes.Length);
 
             var bytes1 = File.ReadAllBytes(path);
 

@@ -7,23 +7,29 @@ namespace Chessar.UnitTests
 {
     partial class FileInfoTests
     {
-        [TestMethod, TestCategory(nameof(FileInfo))]
-        public void FileInfo_Replace()
+        [TestMethod]
+        public void FileInfo_Replace() => FileInfoReplace(false);
+
+        [TestMethod]
+        public void FileInfo_Replace_UNC() => FileInfoReplace(true);
+
+
+        private void FileInfoReplace(in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile();
-            var (pathNew, pathNewWithPrefix) = CreateLongTempFile();
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
 
             var fi = new FileInfo(path);
 
             IsTrue(fi.Exists);
-            AreEqual(0, fi.Length);
+            AreEqual(fi.Length, 0);
 
             File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);
 
             var newFi = fi.Replace(pathNew, null);
 
             IsTrue(newFi.Exists);
-            AreEqual(TenFileContent.Length, newFi.Length);
+            AreEqual(newFi.Length, TenFileContent.Length);
         }
     }
 }

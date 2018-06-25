@@ -79,7 +79,7 @@
     <Compile Include="DirectoryInfo\GetFiles.cs" />
     <Compile Include="DirectoryInfo\GetFileSystemInfos.cs" />
     <Compile Include="DirectoryInfo\GetSetAccessControl.cs" />
-    <Compile Include="DirectoryInfo\FullName.cs" />
+    <Compile Include="DirectoryInfo\NameFullName.cs" />
     <Compile Include="DirectoryInfo\Extension.cs" />
     <Compile Include="DirectoryInfo\Exists.cs" />
     <Compile Include="DirectoryInfo\MoveTo.cs" />
@@ -116,17 +116,15 @@
     <Compile Include="FileInfo\Exists.cs" />
     <Compile Include="FileInfo\Length.cs" />
     <Compile Include="FileInfo\IsReadOnly.cs" />
-    <Compile Include="FileInfo\FullName.cs" />
+    <Compile Include="FileInfo\NameFullName.cs" />
     <Compile Include="FileInfo\GetSetAccessControl.cs" />
     <Compile Include="FileInfo\MoveTo.cs" />
-    <Compile Include="FileInfo\Name.cs" />
     <Compile Include="FileInfo\Open.cs" />
     <Compile Include="FileInfo\OpenRead.cs" />
     <Compile Include="FileInfo\OpenText.cs" />
     <Compile Include="FileInfo\OpenWrite.cs" />
     <Compile Include="FileInfo\Replace.cs" />
     <Compile Include="FileInfo\Time.cs" />
-    <Compile Include="FileInfo\TimeUtc.cs" />
     <Compile Include="FileSystemSecurity\FileSecurity.cs" />
     <Compile Include="FileSystemSecurity\DirectorySecurity.cs" />
     <Compile Include="File\Delete.cs" />
@@ -140,8 +138,7 @@
     <Compile Include="File\AppendReadAllText.cs" />
     <Compile Include="File\AppendReadAllLines.cs" />
     <Compile Include="File\GetAccessControl.cs" />
-    <Compile Include="File\GetTime.cs" />
-    <Compile Include="File\GetTimeUtc.cs" />
+    <Compile Include="File\GetSetTime.cs" />
     <Compile Include="File\Replace.cs" />
     <Compile Include="File\ReadLines.cs" />
     <Compile Include="File\SetAccessControl.cs" />
@@ -153,8 +150,6 @@
     <Compile Include="File\OpenRead.cs" />
     <Compile Include="File\Open.cs" />
     <Compile Include="File\Move.cs" />
-    <Compile Include="File\SetTime.cs" />
-    <Compile Include="File\SetTimeUtc.cs" />
     <Compile Include="IisExpress.cs" />
     <Compile Include="Image\FromFile.cs" />
     <Compile Include="Image\Save.cs" />
