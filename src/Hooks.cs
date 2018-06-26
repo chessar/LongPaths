@@ -27,13 +27,14 @@ namespace Chessar
                 typeof(Path).GetMethod("NormalizePath", privateStatic, null,
                     new[] { typeof(string), typeof(bool), typeof(int) }, null)),
             getFullPathInternalOriginal = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("GetFullPathInternal", privateStatic, null,
-                    new[] { typeof(string) }, null)),
+                typeof(Path).GetMethod("GetFullPathInternal", privateStatic)),
             normalizePath4 = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("NormalizePath", privateStatic, null,
                     new[] { typeof(string), typeof(bool), typeof(int), typeof(bool) }, null)),
             addLongPathPrefix = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("AddLongPathPrefix", privateStatic));
+                typeof(Path).GetMethod("AddLongPathPrefix", privateStatic)),
+            removeLongPathPrefix = new Lazy<MethodInfo>(() =>
+                typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic));
 
         #endregion
 
@@ -73,15 +74,13 @@ namespace Chessar
         {
             // patch NormalizePath(string, bool, int) for FileStream
             Hook(normalizePathOriginal.Value,
-                typeof(Hooks).GetMethod(nameof(NormalizePathPatched), privateStatic, null,
-                    new[] { typeof(string), typeof(bool), typeof(int) }, null));
+                typeof(Hooks).GetMethod(nameof(NormalizePathPatched), privateStatic));
 
             // patch GetFullPathInternal(string) for IO methods
             try
             {
                 Hook(getFullPathInternalOriginal.Value,
-                    typeof(Hooks).GetMethod(nameof(GetFullPathInternalPatched), privateStatic, null,
-                        new[] { typeof(string) }, null));
+                    typeof(Hooks).GetMethod(nameof(GetFullPathInternalPatched), privateStatic));
             }
             catch
             {
@@ -120,6 +119,26 @@ namespace Chessar
             try
             {
                 return (string)addLongPathPrefix.Value?.Invoke(null, new object[] { path }) ?? path;
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Remove long path prefix (<see langword="\\?\"/> or <see langword="\\?\UNC\"/>) if present.
+        /// </summary>
+        /// <param name="path">Path.</param>
+        /// <returns>Path without long prefix.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string RemoveLongPathPrefix(this string path)
+        {
+            try
+            {
+                return (string)removeLongPathPrefix.Value?.Invoke(null, new object[] { path }) ?? path;
             }
             catch (TargetInvocationException ex)
             {

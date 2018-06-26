@@ -45,4 +45,7 @@ namespace Chessar.UnitTests
 
     [TestClass, TestCategory(nameof(StreamWriter))]
     public sealed partial class StreamWriterTests { }
+
+    [TestClass, TestCategory(nameof(XmlUrlResolver))]
+    public sealed partial class XmlUrlResolverTests { }
 }
