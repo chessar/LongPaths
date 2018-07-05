@@ -209,7 +209,7 @@ namespace Chessar
 
             var needPatch = !isGetTempPath && st != null && NeedPatch(cType, ccTypeFullName);
 
-            TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch);
+            TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch); // comment 'in' for PVS
 
             return needPatch
                 ? NormalizePathPatched(path, true, short.MaxValue)
@@ -241,7 +241,7 @@ namespace Chessar
         );
 
         [Conditional("TRACE"), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void TraceGetFullPathInternalPatchedInfo(StackTrace st, Type ct, in bool patched)
+        private static void TraceGetFullPathInternalPatchedInfo(StackTrace st, Type ct, in bool patched) // comment 'in' for PVS
         {
             if (ct?.IsSubclassOf(typeof(TraceListener)) ?? false)
                 return;

@@ -26,6 +26,6 @@ Supported platforms:
 [assembly: ComVisible(false)]
 [assembly: AssemblyVersion("1.0.0")]
 [assembly: AssemblyFileVersion("1.0.0")]
-[assembly: AssemblyInformationalVersion("1.0.0-rc004")]
+[assembly: AssemblyInformationalVersion("1.0.0-rc005")]
 [assembly: NeutralResourcesLanguage("en-US", UltimateResourceFallbackLocation.MainAssembly)]
 [assembly: CLSCompliant(true)]

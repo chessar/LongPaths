@@ -40,6 +40,9 @@
     <Reference Include="HtmlAgilityPack, Version=1.8.4.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.8.4\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.5.0, Culture=neutral, PublicKeyToken=9dea7c6e17aa31ff, processorArchitecture=MSIL">
+      <HintPath>..\packages\ICSharpCode.SharpZipLib.Patched.0.86.5.1\lib\net20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.1.3.2\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
     </Reference>
@@ -156,6 +159,8 @@
     <Compile Include="File\OpenRead.cs" />
     <Compile Include="File\Open.cs" />
     <Compile Include="File\Move.cs" />
+    <Compile Include="ICSharpCode.SharpZipLib.Patched\Create.cs" />
+    <Compile Include="ICSharpCode.SharpZipLib.Patched\ZipFileTests.cs" />
     <Compile Include="IisExpress.cs" />
     <Compile Include="Image\FromFile.cs" />
     <Compile Include="Image\Save.cs" />

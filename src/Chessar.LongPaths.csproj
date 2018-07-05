@@ -27,13 +27,13 @@
     <TransformOnBuild>true</TransformOnBuild>
     <OverwriteReadOnlyOutputFiles>true</OverwriteReadOnlyOutputFiles>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -67,7 +67,15 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild" Condition="('$(Configuration)' == 'Release') AND Exists('nuget.exe')">
-    <Exec Command="nuget.exe pack -properties Configuration=Release" />
+  <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <In>$([System.IO.File]::ReadAllText('Properties\AssemblyInfo.cs'))</In>
+      <Pattern>\[assembly: AssemblyInformationalVersion\("(?&lt;InfoVer&gt;.*)?"\)\]</Pattern>
+      <AssemblyVersionInfo>$([System.Text.RegularExpressions.Regex]::Match($(In), $(Pattern), System.Text.RegularExpressions.RegexOptions.Multiline).Groups["InfoVer"].Value)</AssemblyVersionInfo>
+    </PropertyGroup>
+    <Exec Condition="Exists('nuget.exe')" Command="nuget.exe pack -properties Configuration=Release" />
+    <Message Importance="high" Text="[NugGetPackageName]=$(AssemblyName).$(AssemblyVersionInfo)" />
+    <Delete Files="$(AssemblyName).$(AssemblyVersionInfo).zip" TreatErrorsAsWarnings="false" />
+    <Exec Condition="Exists('7z.exe')" Command="7z.exe a -tzip &quot;$(AssemblyName).$(AssemblyVersionInfo).zip&quot; &quot;.\bin\$(Configuration)\*&quot; -x!*.last* -x!*.CodeAnalysisLog.xml -x!*.tmp -aoa -mx9 -r -ssw -y" />
   </Target>
 </Project>
