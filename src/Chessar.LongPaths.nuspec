@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>$description$</description>
     <summary>$description$</summary>
-    <releaseNotes>Pre-release. RemoveLongPathPrefix method added.</releaseNotes>
+    <releaseNotes>Pre-release. Final RC.</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>long path jmp hook</tags>
     <dependencies>
