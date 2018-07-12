@@ -61,6 +61,7 @@ Supported platforms:
     <ItemGroup>
       <ZipFilesToDelete Include="bin\$(Configuration)\*.zip" />
       <ZipFilesToDelete Include="bin\$(Configuration)\*.tmp*" />
+      <ZipFilesToDelete Include="bin\$(Configuration)\*.nupkg" />
     </ItemGroup>
     <Delete Files="@(ZipFilesToDelete)" TreatErrorsAsWarnings="false" />
   </Target>
