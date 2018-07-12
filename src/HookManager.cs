@@ -112,6 +112,9 @@ namespace Chessar
 
         private static unsafe byte[] PatchJMP(MethodInfo original, MethodInfo replacement)
         {
+            //JIT compile methods
+            RuntimeHelpers.PrepareMethod(original.MethodHandle);
+            RuntimeHelpers.PrepareMethod(replacement.MethodHandle);
             // compile both functions and get pointers to them.
             var originalSite = original.MethodHandle.GetFunctionPointer();
             var replacementSite = replacement.MethodHandle.GetFunctionPointer();

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <runtime>
+    <AppContextSwitchOverrides
+      value="Switch.System.IO.UseLegacyPathHandling=false;Switch.System.IO.BlockLongPaths=false"
+      xdt:Transform="Remove"
+      xdt:SupressWarnings="true"
+      xdt:Locator="Match(value)" />
+  </runtime>
+  <runtime
+    xdt:Transform="Remove"
+    xdt:SupressWarnings="true"
+    xdt:Locator="Condition(count(child::*) = 0)" />
+</configuration>
