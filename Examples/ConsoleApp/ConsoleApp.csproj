@@ -16,9 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Chessar.LongPaths.csproj" />
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="..\..\Chessar.snk">
       <Link>Chessar.snk</Link>
     </None>

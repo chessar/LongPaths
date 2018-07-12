@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if NET462
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -44,3 +45,4 @@ namespace Chessar.UnitTests
         }
     }
 }
+#endif

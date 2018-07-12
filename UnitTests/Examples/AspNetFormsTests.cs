@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿#if NET462
+using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
@@ -153,3 +154,4 @@ namespace Chessar.UnitTests
         }
     }
 }
+#endif

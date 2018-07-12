@@ -4,7 +4,9 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Text;
 using System.Xml;
+#if NET462
 using static Chessar.Hooks;
+#endif
 using static System.IO.Path;
 
 namespace Chessar.UnitTests
@@ -25,8 +27,10 @@ namespace Chessar.UnitTests
             '?', '.', ' ' };
         internal static readonly UTF8Encoding
             Utf8WithoutBom = new UTF8Encoding(false);
+#if NET462
         internal const AccessControlSections defaultAcs =
             AccessControlSections.Access | AccessControlSections.Owner | AccessControlSections.Group;
+#endif
         internal static readonly XmlReaderSettings XmlSettings = new XmlReaderSettings
         {
             IgnoreWhitespace = true,
@@ -59,13 +63,17 @@ namespace Chessar.UnitTests
             var s = DirectorySeparatorChar;
             LongTempFolder = $"{TempFolder}{s}{LongFolderName}{s}{LongFolderName}{s}{LongFolderName}{s}{LongFolderName}{s}";
 
+#if NET462
             PatchLongPaths();
+#endif
         }
 
         [AssemblyCleanup]
         public static void Cleanup()
         {
+#if NET462
             RemoveLongPathsPatch();
+#endif
 
             if (Directory.Exists(TempFolder))
                 Directory.Delete(TempFolder.WithPrefix(), true);
@@ -102,7 +110,11 @@ namespace Chessar.UnitTests
             return $"{s}{s}{path}";
         }
 
-        internal static string WithPrefix(this string path) => path.AddLongPathPrefix();
+        internal static string WithPrefix(this string path) => path
+#if NET462
+            .AddLongPathPrefix()
+#endif
+            ;
 
         internal static (string, string) CreateLongTempFolder(in bool skipCreate = false, in bool asNetwork = false)
         {
@@ -112,7 +124,11 @@ namespace Chessar.UnitTests
                 Directory.CreateDirectory(pathWithPrefix);
             if (asNetwork)
                 path = path.ToNetworkPath();
-            return (path, asNetwork ? path.AddLongPathPrefix() : pathWithPrefix);
+            return (path, asNetwork ? path
+#if NET462
+                .AddLongPathPrefix()
+#endif
+            : pathWithPrefix);
         }
 
         internal static (string, string) CreateLongTempFile(in bool skipCreate = false, in bool asNetwork = false)
@@ -124,7 +140,11 @@ namespace Chessar.UnitTests
                 File.CreateText(pathWithPrefix).Dispose();
             if (asNetwork)
                 path = path.ToNetworkPath();
-            return (path, asNetwork ? path.AddLongPathPrefix() : pathWithPrefix);
+            return (path, asNetwork ? path
+#if NET462
+                    .AddLongPathPrefix()
+#endif
+                : pathWithPrefix);
         }
     }
 }

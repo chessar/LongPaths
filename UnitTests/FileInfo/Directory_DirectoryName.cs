@@ -23,8 +23,10 @@ namespace Chessar.UnitTests
             var diFullName = fi.DirectoryName;
 
             IsTrue(di.Exists);
+#if NET462
             IsTrue(di.FullName.StartsWith(LongPathPrefix));
             IsTrue(diFullName.StartsWith(LongPathPrefix));
+#endif
             AreEqual(di.FullName, diFullName);
         }
     }

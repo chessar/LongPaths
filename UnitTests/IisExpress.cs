@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET462
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -97,3 +98,4 @@ namespace Chessar.UnitTests
         }
     }
 }
+#endif

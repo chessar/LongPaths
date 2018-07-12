@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if NET462
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Security.AccessControl;
 using static Chessar.UnitTests.Utils;
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
@@ -30,3 +31,4 @@ namespace Chessar.UnitTests
         }
     }
 }
+#endif
