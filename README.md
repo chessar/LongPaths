@@ -12,8 +12,7 @@ classes:
 (and others).
 
 The library is based on replacing the internal
-[`NormalizePath`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,390)
-and
+[`NormalizePath`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,390) and 
 [`GetFullPathInternal`](https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,361)
 functions from the static
 [`Path`](https://docs.microsoft.com/en-us/dotnet/api/system.io.path)
@@ -72,7 +71,6 @@ For the following list of ctors/methods, you must directly specify the prefix of
 * [`new FileSecurity(String, AccessControlSections)`](https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.filesecurity.-ctor#System_Security_AccessControl_FileSecurity__ctor_System_String_System_Security_AccessControl_AccessControlSections_)
 * [`Directory.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getaccesscontrol)
 * [`File.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.file.getaccesscontrol)
-* [`Directory.Move(String, String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.move)
 * [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
 * [`HttpResponse.TransmitFile(String[, Int64, Int64])`](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpresponse.transmitfile)
 

@@ -31,6 +31,12 @@ namespace Chessar
             normalizePath4 = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("NormalizePath", privateStatic, null,
                     new[] { typeof(string), typeof(bool), typeof(int), typeof(bool) }, null)),
+            directoryInternalMove = new Lazy<MethodInfo>(() =>
+                typeof(Directory).GetMethod("InternalMove", privateStatic, null,
+                    new[] { typeof(string), typeof(string), typeof(bool) }, null)),
+            longPathDirectoryMove = new Lazy<MethodInfo>(() =>
+                Type.GetType("System.IO.LongPathDirectory").GetMethod("Move", privateStatic, null,
+                    new[] { typeof(string), typeof(string) }, null)),
             addLongPathPrefix = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("AddLongPathPrefix", privateStatic)),
             removeLongPathPrefix = new Lazy<MethodInfo>(() =>
@@ -46,7 +52,8 @@ namespace Chessar
         /// </para>
         /// for <see cref="FileStream"/>, and
         /// <para>
-        /// <see cref="Path"/>.GetFullPathInternal(<see langword="string"/> path)
+        /// <see cref="Path"/>.GetFullPathInternal(<see langword="string"/> path),
+        /// <see cref="Directory"/>.InternalMove(<see langword="string"/> sourceDirName, <see langword="string"/> destDirName, <see langword="bool"/> checkHost)
         /// </para><para>
         /// for methods from <see cref="File"/>, <see cref="FileInfo"/>,
         /// <see cref="Directory"/>, <see cref="DirectoryInfo"/>, etc..
@@ -60,11 +67,13 @@ namespace Chessar
         /// </para>
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// If the <see cref="Path"/>.NormalizePath or <see cref="Path"/>.GetFullPathInternal not found.
+        /// If the <see cref="Path"/>.NormalizePath, <see cref="Path"/>.GetFullPathInternal or
+        /// <see cref="Directory"/>.InternalMove not found.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If the <see cref="Path"/>.NormalizePath or
-        /// <see cref="Path"/>.GetFullPathInternal
+        /// If the <see cref="Path"/>.NormalizePath,
+        /// <see cref="Path"/>.GetFullPathInternal or
+        /// <see cref="Directory"/>.InternalMove
         /// is already hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -87,16 +96,34 @@ namespace Chessar
                 Unhook(normalizePathOriginal.Value);
                 throw;
             }
+
+            // patch Directory.InternalMove(string, string, bool)
+            try
+            {
+                if (longPathDirectoryMove.Value != null)
+                    Hook(directoryInternalMove.Value,
+                        typeof(Hooks).GetMethod(nameof(DirectoryMovePatched), privateStatic));
+            }
+            catch
+            {
+                Unhook(getFullPathInternalOriginal.Value);
+                Unhook(normalizePathOriginal.Value);
+                throw;
+            }
         }
 
         /// <summary>
         /// Remove long path support patch.
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// If the <see cref="Path"/>.GetFullPathInternal or <see cref="Path"/>.NormalizePath not found.
+        /// If the <see cref="Path"/>.GetFullPathInternal,
+        /// <see cref="Path"/>.NormalizePath or
+        /// <see cref="Directory"/>.InternalMove not found.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If the <see cref="Path"/>.GetFullPathInternal or <see cref="Path"/>.NormalizePath
+        /// If the <see cref="Path"/>.GetFullPathInternal,
+        /// <see cref="Path"/>.NormalizePath or
+        /// <see cref="Directory"/>.InternalMove
         /// method was never hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -104,6 +131,8 @@ namespace Chessar
         /// </exception>
         public static void RemoveLongPathsPatch()
         {
+            if (longPathDirectoryMove.Value != null)
+                Unhook(directoryInternalMove.Value);
             Unhook(getFullPathInternalOriginal.Value);
             Unhook(normalizePathOriginal.Value);
         }
@@ -176,6 +205,23 @@ namespace Chessar
                 return AddLongPathPrefix(normalizedPath);
 
             return normalizedPath;
+        }
+
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters")]
+        [MethodImpl(MethodImplOptions.NoInlining)] // required
+        private static void DirectoryMovePatched(string sourceDirName, string destDirName, bool checkHost)
+        {
+            try
+            {
+                longPathDirectoryMove.Value.Invoke(null,
+                    new object[] { sourceDirName, destDirName });
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]

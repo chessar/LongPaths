@@ -2,51 +2,48 @@
 
   <PropertyGroup Label="Main">
     <Product>Long Path Support for .NET</Product>
-    <RootNamespace>Chessar</RootNamespace>
     <Company>Chessar</Company>
-    <AssemblyName>Chessar.LongPaths</AssemblyName>
+    <RootNamespace>$(Company)</RootNamespace>
+    <AssemblyName>$(Company).LongPaths</AssemblyName>
     <TargetFrameworks>net462</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugSymbols>true</DebugSymbols>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <AssemblyOriginatorKeyFile>..\Chessar.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\$(Company).snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>..\Chessar.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\$(Company).ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
-  <ItemGroup Label="AdvItems">
-    <None Include="..\Chessar.snk">
-      <Link>Chessar.snk</Link>
-    </None>
-    <None Remove="*.nu*;*.zip;*.dll;*.exe;*.xdt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="*.config.*install.xdt" />
-  </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
+  <ItemGroup Label="AdvItems">
+    <None Include="..\$(Company).snk">
+      <Link>$(Company).snk</Link>
+    </None>
+    <None Remove="*.nu*;*.zip;*.dll;*.exe;*.xdt" />
+    <Content Include="*.config.*install.xdt" />
+  </ItemGroup>
+
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
-    <Copyright>Copyright © Chessar 2018</Copyright>
-    <PackageReleaseNotes>First release.</PackageReleaseNotes>
-    <Description>Chessar.LongPaths is a .NET library that allows you to enable long path support for the main System.IO classes (and others).
+    <Copyright>Copyright © $(Company) 2018</Copyright>
+    <PackageReleaseNotes>Patch for Directory.Move</PackageReleaseNotes>
+    <Description>$(AssemblyName) is a .NET library that allows you to enable long path support for the main System.IO classes (and others).
 It is based on replacing with JMP hooks, internal functions in System.IO.Path (NormalizePath and GetFullPathInternal), which adds prefixes (\\?\ or \\?\UNC\) for paths to files/folders.
 In this case, your code does not need to directly add such prefixes to the paths.
 
 Supported platforms:
-  .NET 4.6.2+</Description>
+  .NET Framework 4.6.2+</Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/LICENSE.md</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/icon.png</PackageIconUrl>
