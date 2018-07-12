@@ -37,6 +37,7 @@
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
     <Version>1.0.0</Version>
+    <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © Chessar 2018</Copyright>
     <PackageReleaseNotes>First release.</PackageReleaseNotes>
