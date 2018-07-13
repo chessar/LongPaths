@@ -7,6 +7,10 @@
 *.userosscache
 *.sln.docstates
 
+# CA
+*.lastcodeanalysissucceeded
+[Cc]ode[Aa]nalysis[Ll]og.xml
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
