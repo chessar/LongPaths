@@ -42,7 +42,8 @@ namespace Chessar
         #region Fields
 
         private static readonly BindingFlags
-            privateStatic = BindingFlags.NonPublic | BindingFlags.Static;
+            privateStatic = BindingFlags.NonPublic | BindingFlags.Static,
+            privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
         private static readonly Lazy<MethodInfo>
             normalizePathOriginal = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("NormalizePath", privateStatic, null,
@@ -61,7 +62,8 @@ namespace Chessar
             addLongPathPrefix = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("AddLongPathPrefix", privateStatic)),
             removeLongPathPrefix = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic)),
+                typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null,
+                    new[] { typeof(string) }, null)),
             nosCreateInternal = new Lazy<MethodInfo>(() =>
                 typeof(NativeObjectSecurity).GetMethod("CreateInternal", privateStatic)),
             envGetResourceString1 = new Lazy<MethodInfo>(() =>
@@ -75,10 +77,20 @@ namespace Chessar
             isPathRooted = new Lazy<MethodInfo>(() =>
                 Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)),
             responseGetNormalizedFilename = new Lazy<MethodInfo>(() =>
-                typeof(HttpResponse).GetMethod("GetNormalizedFilename", BindingFlags.NonPublic | BindingFlags.Instance));
+                typeof(HttpResponse).GetMethod("GetNormalizedFilename", privateInstance)),
+            uriCreateThis = new Lazy<MethodInfo>(() =>
+                typeof(Uri).GetMethod("CreateThis", privateInstance)),
+            uriParseScheme = new Lazy<MethodInfo>(() =>
+                typeof(Uri).GetMethod("ParseScheme", privateStatic)),
+            uriInitializeUri = new Lazy<MethodInfo>(() =>
+                typeof(Uri).GetMethod("InitializeUri", privateInstance));
         private static Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
-            (typeof(CommonSecurityDescriptor)).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+            (typeof(CommonSecurityDescriptor)).GetConstructors(privateInstance)
             ?.FirstOrDefault(ci => ci.GetParameters().Length == 4));
+        private static Lazy<FieldInfo>
+            mStringUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_String", privateInstance)),
+            mFlagsUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Flags", privateInstance)),
+            mSyntaxUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Syntax", privateInstance));
 
         #endregion
 
@@ -93,7 +105,8 @@ namespace Chessar
         /// <see cref="Path"/>.GetFullPathInternal(<see langword="string"/> path),
         /// <see cref="Directory"/>.InternalMove(<see langword="string"/> sourceDirName, <see langword="string"/> destDirName, <see langword="bool"/> checkHost),
         /// <see cref="NativeObjectSecurity"/>.CreateInternal(...),
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename(<see langword="string"/> fn)
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename(<see langword="string"/> fn),
+        /// <see cref="Uri"/>.CreateThis(<see langword="string"/> uri, <see langword="bool"/> dontEscape, <see cref="UriKind"/> uriKind)
         /// </para><para>
         /// for methods from <see cref="File"/>, <see cref="FileInfo"/>,
         /// <see cref="Directory"/>, <see cref="DirectoryInfo"/>, etc..
@@ -110,16 +123,18 @@ namespace Chessar
         /// If the <see cref="Path"/>.NormalizePath,
         /// <see cref="Path"/>.GetFullPathInternal,
         /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
+        /// <see cref="Uri"/>.CreateThis
         /// not found.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// If the <see cref="Path"/>.NormalizePath,
         /// <see cref="Path"/>.GetFullPathInternal,
         /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
+        /// <see cref="Uri"/>.CreateThis
         /// is already hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -167,7 +182,7 @@ namespace Chessar
             catch
             {
                 if (longPathDirectoryMove.Value != null)
-                    Unhook(longPathDirectoryMove.Value);
+                    Unhook(directoryInternalMove.Value);
                 Unhook(getFullPathInternalOriginal.Value);
                 Unhook(normalizePathOriginal.Value);
                 throw;
@@ -184,7 +199,25 @@ namespace Chessar
                 if (nosCreateInternal.Value != null)
                     Unhook(nosCreateInternal.Value);
                 if (longPathDirectoryMove.Value != null)
-                    Unhook(longPathDirectoryMove.Value);
+                    Unhook(directoryInternalMove.Value);
+                Unhook(getFullPathInternalOriginal.Value);
+                Unhook(normalizePathOriginal.Value);
+                throw;
+            }
+
+            // patch Uri.CreateThis(string, bool, UriKind)
+            try
+            {
+                Hook(uriCreateThis.Value,
+                    typeof(Hooks).GetMethod(nameof(UriCreateThisPatched), privateStatic));
+            }
+            catch
+            {
+                Unhook(responseGetNormalizedFilename.Value);
+                if (nosCreateInternal.Value != null)
+                    Unhook(nosCreateInternal.Value);
+                if (longPathDirectoryMove.Value != null)
+                    Unhook(directoryInternalMove.Value);
                 Unhook(getFullPathInternalOriginal.Value);
                 Unhook(normalizePathOriginal.Value);
                 throw;
@@ -198,16 +231,18 @@ namespace Chessar
         /// If the <see cref="Path"/>.GetFullPathInternal,
         /// <see cref="Path"/>.NormalizePath,
         /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
+        /// <see cref="Uri"/>.CreateThis
         /// not found.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// If the <see cref="Path"/>.GetFullPathInternal,
         /// <see cref="Path"/>.NormalizePath,
         /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
+        /// <see cref="Uri"/>.CreateThis
         /// method was never hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -215,6 +250,7 @@ namespace Chessar
         /// </exception>
         public static void RemoveLongPathsPatch()
         {
+            Unhook(uriCreateThis.Value);
             Unhook(responseGetNormalizedFilename.Value);
             if (nosCreateInternal.Value != null)
                 Unhook(nosCreateInternal.Value);
@@ -265,6 +301,39 @@ namespace Chessar
         }
 
         #region Private
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void UriCreateThisPatched(Uri thisUri, string uri, bool dontEscape, UriKind uriKind)
+        {
+            try
+            {
+                uri = uri?.RemoveLongPathPrefix();
+                mStringUriFld.Value.SetValue(thisUri, uri ?? string.Empty);
+                var flagsLong = (ulong)mFlagsUriFld.Value.GetValue(thisUri);
+                if (dontEscape)
+                    flagsLong |= 0x00080000;
+                var flags = Enum.Parse(mFlagsUriFld.Value.FieldType, flagsLong.ToString(CultureInfo.InvariantCulture));
+                var mSyntax = mSyntaxUriFld.Value.GetValue(thisUri);
+
+                object[] args = { uri, flags, mSyntax };
+                var err = uriParseScheme.Value.Invoke(null, args);
+
+                mFlagsUriFld.Value.SetValue(thisUri, args[1]);
+                mSyntaxUriFld.Value.SetValue(thisUri, args[2]);
+
+                args = new [] { err, uriKind, null };
+                uriInitializeUri.Value.Invoke(thisUri, args);
+
+                if (args[2] is UriFormatException e)
+                    throw e;
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
+        }
 
         [Pure, MethodImpl(MethodImplOptions.NoInlining)] // required
         private static string GetNormalizedFilenamePatched(HttpResponse response, string fn)
