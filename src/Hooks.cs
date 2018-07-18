@@ -13,6 +13,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
+using System.Web;
+using System.Web.Hosting;
 using static Chessar.HookManager;
 
 namespace Chessar
@@ -69,7 +71,11 @@ namespace Chessar
                 typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
                     new[] { typeof(string), typeof(object[]) }, null)),
             win32GetSecurityInfo = new Lazy<MethodInfo>(() =>
-                Type.GetType("System.Security.AccessControl.Win32").GetMethod("GetSecurityInfo", privateStatic));
+                Type.GetType("System.Security.AccessControl.Win32").GetMethod("GetSecurityInfo", privateStatic)),
+            isPathRooted = new Lazy<MethodInfo>(() =>
+                Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)),
+            responseGetNormalizedFilename = new Lazy<MethodInfo>(() =>
+                typeof(HttpResponse).GetMethod("GetNormalizedFilename", BindingFlags.NonPublic | BindingFlags.Instance));
         private static Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
             (typeof(CommonSecurityDescriptor)).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
             ?.FirstOrDefault(ci => ci.GetParameters().Length == 4));
@@ -86,7 +92,8 @@ namespace Chessar
         /// <para>
         /// <see cref="Path"/>.GetFullPathInternal(<see langword="string"/> path),
         /// <see cref="Directory"/>.InternalMove(<see langword="string"/> sourceDirName, <see langword="string"/> destDirName, <see langword="bool"/> checkHost),
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal(...)
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal(...),
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename(<see langword="string"/> fn)
         /// </para><para>
         /// for methods from <see cref="File"/>, <see cref="FileInfo"/>,
         /// <see cref="Directory"/>, <see cref="DirectoryInfo"/>, etc..
@@ -102,15 +109,17 @@ namespace Chessar
         /// <exception cref="ArgumentNullException">
         /// If the <see cref="Path"/>.NormalizePath,
         /// <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Directory"/>.InternalMove or
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal
+        /// <see cref="Directory"/>.InternalMove,
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename
         /// not found.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// If the <see cref="Path"/>.NormalizePath,
         /// <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Directory"/>.InternalMove or
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal
+        /// <see cref="Directory"/>.InternalMove,
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename
         /// is already hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -152,10 +161,28 @@ namespace Chessar
             try
             {
                 if (nosCreateInternal.Value != null)
-                    Hook(nosCreateInternal.Value, typeof(Hooks).GetMethod(nameof(NosCreateInternalPatched), privateStatic));
+                    Hook(nosCreateInternal.Value,
+                        typeof(Hooks).GetMethod(nameof(NosCreateInternalPatched), privateStatic));
             }
             catch
             {
+                if (longPathDirectoryMove.Value != null)
+                    Unhook(longPathDirectoryMove.Value);
+                Unhook(getFullPathInternalOriginal.Value);
+                Unhook(normalizePathOriginal.Value);
+                throw;
+            }
+
+            // patch HttpResponse.GetNormalizedFilename
+            try
+            {
+                Hook(responseGetNormalizedFilename.Value,
+                    typeof(Hooks).GetMethod(nameof(GetNormalizedFilenamePatched), privateStatic));
+            }
+            catch
+            {
+                if (nosCreateInternal.Value != null)
+                    Unhook(nosCreateInternal.Value);
                 if (longPathDirectoryMove.Value != null)
                     Unhook(longPathDirectoryMove.Value);
                 Unhook(getFullPathInternalOriginal.Value);
@@ -170,15 +197,17 @@ namespace Chessar
         /// <exception cref="ArgumentNullException">
         /// If the <see cref="Path"/>.GetFullPathInternal,
         /// <see cref="Path"/>.NormalizePath,
-        /// <see cref="Directory"/>.InternalMove or
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal
+        /// <see cref="Directory"/>.InternalMove,
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename
         /// not found.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// If the <see cref="Path"/>.GetFullPathInternal,
         /// <see cref="Path"/>.NormalizePath,
-        /// <see cref="Directory"/>.InternalMove or
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal
+        /// <see cref="Directory"/>.InternalMove,
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal or
+        /// <see cref="HttpResponse"/>.GetNormalizedFilename
         /// method was never hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -186,6 +215,7 @@ namespace Chessar
         /// </exception>
         public static void RemoveLongPathsPatch()
         {
+            Unhook(responseGetNormalizedFilename.Value);
             if (nosCreateInternal.Value != null)
                 Unhook(nosCreateInternal.Value);
             if (longPathDirectoryMove.Value != null)
@@ -235,6 +265,34 @@ namespace Chessar
         }
 
         #region Private
+
+        [Pure, MethodImpl(MethodImplOptions.NoInlining)] // required
+        private static string GetNormalizedFilenamePatched(HttpResponse response, string fn)
+        {
+            try
+            {
+                // If it's not a physical path, call MapPath on it
+                if (!(bool)isPathRooted.Value.Invoke(null, new object[] { fn }))
+                {
+                    var fldInfo = typeof(HttpResponse).GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var context = fldInfo.GetValue(response) as HttpContext;
+                    var request = context?.Request;
+
+                    if (request != null)
+                        fn = request.MapPath(fn); // relative to current request
+                    else
+                        fn = HostingEnvironment.MapPath(fn);
+                }
+
+                return fn.AddLongPathPrefix();
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
+        }
 
         private delegate Exception ExceptionFromErrorCode(int errorCode, string name, SafeHandle handle, object context);
 

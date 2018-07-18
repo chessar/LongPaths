@@ -68,7 +68,6 @@ See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 For the following list of ctors/methods, you must directly specify the prefix of long paths
 (because they are not supported by this library, see [Unit Tests](https://github.com/chessar/LongPaths/tree/master/UnitTests)):
 * [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
-* [`HttpResponse.TransmitFile(String[, Int64, Int64])`](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpresponse.transmitfile)
 
 for example:
 ```csharp
