@@ -5,10 +5,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using static Chessar.HookManager;
 
 namespace Chessar
@@ -18,6 +22,21 @@ namespace Chessar
     /// </summary>
     public static partial class Hooks
     {
+        #region Consts
+
+        // Error codes from WinError.h
+        private const int
+            ERROR_SUCCESS = 0x0,
+            ERROR_FILE_NOT_FOUND = 0x2,
+            ERROR_ACCESS_DENIED = 0x5,
+            ERROR_INVALID_PARAMETER = 0x57,
+            ERROR_INVALID_NAME = 0x7B,
+            ERROR_INVALID_OWNER = 0x51B,
+            ERROR_INVALID_PRIMARY_GROUP = 0x51C,
+            ERROR_NO_SECURITY_ON_OBJECT = 0x546;
+
+        #endregion
+
         #region Fields
 
         private static readonly BindingFlags
@@ -40,7 +59,20 @@ namespace Chessar
             addLongPathPrefix = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("AddLongPathPrefix", privateStatic)),
             removeLongPathPrefix = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic));
+                typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic)),
+            nosCreateInternal = new Lazy<MethodInfo>(() =>
+                typeof(NativeObjectSecurity).GetMethod("CreateInternal", privateStatic)),
+            envGetResourceString1 = new Lazy<MethodInfo>(() =>
+                typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
+                    new[] { typeof(string) }, null)),
+            envGetResourceString2 = new Lazy<MethodInfo>(() =>
+                typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
+                    new[] { typeof(string), typeof(object[]) }, null)),
+            win32GetSecurityInfo = new Lazy<MethodInfo>(() =>
+                Type.GetType("System.Security.AccessControl.Win32").GetMethod("GetSecurityInfo", privateStatic));
+        private static Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
+            (typeof(CommonSecurityDescriptor)).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+            ?.FirstOrDefault(ci => ci.GetParameters().Length == 4));
 
         #endregion
 
@@ -53,7 +85,8 @@ namespace Chessar
         /// for <see cref="FileStream"/>, and
         /// <para>
         /// <see cref="Path"/>.GetFullPathInternal(<see langword="string"/> path),
-        /// <see cref="Directory"/>.InternalMove(<see langword="string"/> sourceDirName, <see langword="string"/> destDirName, <see langword="bool"/> checkHost)
+        /// <see cref="Directory"/>.InternalMove(<see langword="string"/> sourceDirName, <see langword="string"/> destDirName, <see langword="bool"/> checkHost),
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal(...)
         /// </para><para>
         /// for methods from <see cref="File"/>, <see cref="FileInfo"/>,
         /// <see cref="Directory"/>, <see cref="DirectoryInfo"/>, etc..
@@ -67,13 +100,17 @@ namespace Chessar
         /// </para>
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// If the <see cref="Path"/>.NormalizePath, <see cref="Path"/>.GetFullPathInternal or
-        /// <see cref="Directory"/>.InternalMove not found.
+        /// If the <see cref="Path"/>.NormalizePath,
+        /// <see cref="Path"/>.GetFullPathInternal,
+        /// <see cref="Directory"/>.InternalMove or
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal
+        /// not found.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// If the <see cref="Path"/>.NormalizePath,
-        /// <see cref="Path"/>.GetFullPathInternal or
-        /// <see cref="Directory"/>.InternalMove
+        /// <see cref="Path"/>.GetFullPathInternal,
+        /// <see cref="Directory"/>.InternalMove or
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal
         /// is already hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -110,6 +147,21 @@ namespace Chessar
                 Unhook(normalizePathOriginal.Value);
                 throw;
             }
+
+            // patch NativeObjectSecurity.CreateInternal
+            try
+            {
+                if (nosCreateInternal.Value != null)
+                    Hook(nosCreateInternal.Value, typeof(Hooks).GetMethod(nameof(NosCreateInternalPatched), privateStatic));
+            }
+            catch
+            {
+                if (longPathDirectoryMove.Value != null)
+                    Unhook(longPathDirectoryMove.Value);
+                Unhook(getFullPathInternalOriginal.Value);
+                Unhook(normalizePathOriginal.Value);
+                throw;
+            }
         }
 
         /// <summary>
@@ -117,13 +169,16 @@ namespace Chessar
         /// </summary>
         /// <exception cref="ArgumentNullException">
         /// If the <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Path"/>.NormalizePath or
-        /// <see cref="Directory"/>.InternalMove not found.
+        /// <see cref="Path"/>.NormalizePath,
+        /// <see cref="Directory"/>.InternalMove or
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal
+        /// not found.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// If the <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Path"/>.NormalizePath or
-        /// <see cref="Directory"/>.InternalMove
+        /// <see cref="Path"/>.NormalizePath,
+        /// <see cref="Directory"/>.InternalMove or
+        /// <see cref="NativeObjectSecurity"/>.CreateInternal
         /// method was never hooked.
         /// </exception>
         /// <exception cref="Win32Exception">
@@ -131,6 +186,8 @@ namespace Chessar
         /// </exception>
         public static void RemoveLongPathsPatch()
         {
+            if (nosCreateInternal.Value != null)
+                Unhook(nosCreateInternal.Value);
             if (longPathDirectoryMove.Value != null)
                 Unhook(directoryInternalMove.Value);
             Unhook(getFullPathInternalOriginal.Value);
@@ -178,6 +235,77 @@ namespace Chessar
         }
 
         #region Private
+
+        private delegate Exception ExceptionFromErrorCode(int errorCode, string name, SafeHandle handle, object context);
+
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string EnvGetResString(string key) => (string)envGetResourceString1
+            .Value.Invoke(null, new object[] { key });
+
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string EnvGetResString(string key, params object[] values) => (string)envGetResourceString2
+            .Value.Invoke(null, new object[] { key, values });
+
+        [MethodImpl(MethodImplOptions.NoInlining)] // required
+        private static CommonSecurityDescriptor NosCreateInternalPatched(ResourceType resourceType,
+            bool isContainer, string name, SafeHandle handle, AccessControlSections includeSections,
+            bool createByName, ExceptionFromErrorCode exceptionFromErrorCode, object exceptionContext)
+        {
+            if (createByName && name is null)
+                throw new ArgumentNullException(nameof(name));
+            else if (!createByName && handle is null)
+                throw new ArgumentNullException(nameof(handle));
+            Contract.EndContractBlock();
+
+            try
+            {
+                object[] parameters = { resourceType, name?.AddLongPathPrefix(), handle, includeSections, null };
+                var error = (int)win32GetSecurityInfo.Value.Invoke(null, parameters);
+
+                if (error != ERROR_SUCCESS)
+                {
+                    Exception exception = null;
+
+                    if (exceptionFromErrorCode != null)
+                        exception = exceptionFromErrorCode(error, name, handle, exceptionContext);
+
+                    if (exception is null)
+                    {
+                        if (error == ERROR_ACCESS_DENIED)
+                            exception = new UnauthorizedAccessException();
+                        else if (error == ERROR_INVALID_OWNER)
+                            exception = new InvalidOperationException(EnvGetResString("AccessControl_InvalidOwner"));
+                        else if (error == ERROR_INVALID_PRIMARY_GROUP)
+                            exception = new InvalidOperationException(EnvGetResString("AccessControl_InvalidGroup"));
+                        else if (error == ERROR_INVALID_PARAMETER)
+                            exception = new InvalidOperationException(EnvGetResString("AccessControl_UnexpectedError", error));
+                        else if (error == ERROR_INVALID_NAME)
+                            exception = new ArgumentException(EnvGetResString("Argument_InvalidName"), nameof(name));
+                        else if (error == ERROR_FILE_NOT_FOUND)
+                            exception = (name is null ? new FileNotFoundException() : new FileNotFoundException(name));
+                        else if (error == ERROR_NO_SECURITY_ON_OBJECT)
+                            exception = new NotSupportedException(EnvGetResString("AccessControl_NoAssociatedSecurity"));
+                        else
+                        {
+                            Contract.Assert(false, string.Format(CultureInfo.InvariantCulture, "Win32GetSecurityInfo() failed with unexpected error code {0}", error));
+                            exception = new InvalidOperationException(EnvGetResString("AccessControl_UnexpectedError", error));
+                        }
+                    }
+
+                    throw exception;
+                }
+
+                var rawSD = (RawSecurityDescriptor)parameters[parameters.Length - 1];
+                return (CommonSecurityDescriptor)csdCtor.Value
+                    ?.Invoke(new object[] { isContainer, false, rawSD, true });
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string NormalizePath4(string path, bool fullCheck, int maxPathLength)

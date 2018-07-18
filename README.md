@@ -67,10 +67,6 @@ See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 # Notes
 For the following list of ctors/methods, you must directly specify the prefix of long paths
 (because they are not supported by this library, see [Unit Tests](https://github.com/chessar/LongPaths/tree/master/UnitTests)):
-* [`new DirectorySecurity(String, AccessControlSections)`](https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.directorysecurity.-ctor#System_Security_AccessControl_DirectorySecurity__ctor_System_String_System_Security_AccessControl_AccessControlSections_)
-* [`new FileSecurity(String, AccessControlSections)`](https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.filesecurity.-ctor#System_Security_AccessControl_FileSecurity__ctor_System_String_System_Security_AccessControl_AccessControlSections_)
-* [`Directory.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.getaccesscontrol)
-* [`File.GetAccessControl(String[, AccessControlSections])`](https://docs.microsoft.com/en-us/dotnet/api/system.io.file.getaccesscontrol)
 * [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
 * [`HttpResponse.TransmitFile(String[, Int64, Int64])`](https://docs.microsoft.com/en-us/dotnet/api/system.web.httpresponse.transmitfile)
 
@@ -79,10 +75,8 @@ for example:
 ...
 using static Chessar.Hooks;
 ...
-    var ds = new DirectorySecurity(path.AddLongPathPrefix(), acs);
+    directoryInfo.MoveTo(path.AddLongPathPrefix());
 ```
-or use [`DirectoryInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo) instead `Directory` (exclude `MoveTo` method) and
-[`FileInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.fileinfo) instead `File`.
 
 **Note** that, next methods does not work for long paths, even if a prefix is added:
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
@@ -90,7 +84,7 @@ or use [`DirectoryInfo`](https://docs.microsoft.com/en-us/dotnet/api/system.io.d
 
 # TODO
 1. Speed up MethodInfo.Invoke in the class [`Hooks`](https://github.com/chessar/LongPaths/blob/master/src/Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).
-2. Add long path support in ctors/methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
+2. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
 3. Add more unit tests.
 4. Make hooks more thread safe.
 
