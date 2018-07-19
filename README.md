@@ -68,6 +68,7 @@ See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 For the following list of ctors/methods, you must directly specify the prefix of long paths
 (because they are not supported by this library, see [Unit Tests](https://github.com/chessar/LongPaths/tree/master/UnitTests)):
 * [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
+* [`Image.Save(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.save)
 
 for example:
 ```csharp
@@ -79,7 +80,6 @@ using static Chessar.Hooks;
 
 **Note** that, next methods does not work for long paths, even if a prefix is added:
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
-* [`Image.Save(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.save) (use `Image.Save` to `Stream` instead)
 
 # TODO
 1. Speed up MethodInfo.Invoke in the class [`Hooks`](https://github.com/chessar/LongPaths/blob/master/src/Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).
