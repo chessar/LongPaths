@@ -22,6 +22,9 @@ namespace Chessar.UnitTests
 #if NET462
     [TestClass, TestCategory(nameof(FileSystemSecurity))]
     public sealed partial class FileSystemSecurityTests { }
+
+    [TestClass, TestCategory(nameof(System.Configuration.Configuration))]
+    public sealed partial class ConfigurationTests { }
 #endif
 
     [TestClass, TestCategory(nameof(Image))]

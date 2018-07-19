@@ -154,7 +154,7 @@ namespace Chessar
             }
             catch
             {
-                Unhook(normalizePathOriginal.Value);
+                BatchUnhook(normalizePathOriginal.Value);
                 throw;
             }
 
@@ -167,8 +167,7 @@ namespace Chessar
             }
             catch
             {
-                Unhook(getFullPathInternalOriginal.Value);
-                Unhook(normalizePathOriginal.Value);
+                BatchUnhook(getFullPathInternalOriginal.Value, normalizePathOriginal.Value);
                 throw;
             }
 
@@ -181,10 +180,9 @@ namespace Chessar
             }
             catch
             {
-                if (longPathDirectoryMove.Value != null)
-                    Unhook(directoryInternalMove.Value);
-                Unhook(getFullPathInternalOriginal.Value);
-                Unhook(normalizePathOriginal.Value);
+                BatchUnhook(directoryInternalMove.Value,
+                    getFullPathInternalOriginal.Value,
+                    normalizePathOriginal.Value);
                 throw;
             }
 
@@ -196,12 +194,10 @@ namespace Chessar
             }
             catch
             {
-                if (nosCreateInternal.Value != null)
-                    Unhook(nosCreateInternal.Value);
-                if (longPathDirectoryMove.Value != null)
-                    Unhook(directoryInternalMove.Value);
-                Unhook(getFullPathInternalOriginal.Value);
-                Unhook(normalizePathOriginal.Value);
+                BatchUnhook(nosCreateInternal.Value,
+                    directoryInternalMove.Value,
+                    getFullPathInternalOriginal.Value,
+                    normalizePathOriginal.Value);
                 throw;
             }
 
@@ -213,13 +209,11 @@ namespace Chessar
             }
             catch
             {
-                Unhook(responseGetNormalizedFilename.Value);
-                if (nosCreateInternal.Value != null)
-                    Unhook(nosCreateInternal.Value);
-                if (longPathDirectoryMove.Value != null)
-                    Unhook(directoryInternalMove.Value);
-                Unhook(getFullPathInternalOriginal.Value);
-                Unhook(normalizePathOriginal.Value);
+                BatchUnhook(responseGetNormalizedFilename.Value,
+                    nosCreateInternal.Value,
+                    directoryInternalMove.Value,
+                    getFullPathInternalOriginal.Value,
+                    normalizePathOriginal.Value);
                 throw;
             }
         }
@@ -227,37 +221,20 @@ namespace Chessar
         /// <summary>
         /// Remove long path support patch.
         /// </summary>
-        /// <exception cref="ArgumentNullException">
-        /// If the <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Path"/>.NormalizePath,
-        /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
-        /// <see cref="Uri"/>.CreateThis
-        /// not found.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// If the <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Path"/>.NormalizePath,
-        /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
-        /// <see cref="Uri"/>.CreateThis
-        /// method was never hooked.
-        /// </exception>
-        /// <exception cref="Win32Exception">
+        /// <exception cref="AggregateException">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
         public static void RemoveLongPathsPatch()
         {
-            Unhook(uriCreateThis.Value);
-            Unhook(responseGetNormalizedFilename.Value);
-            if (nosCreateInternal.Value != null)
-                Unhook(nosCreateInternal.Value);
-            if (longPathDirectoryMove.Value != null)
-                Unhook(directoryInternalMove.Value);
-            Unhook(getFullPathInternalOriginal.Value);
-            Unhook(normalizePathOriginal.Value);
+            var errors = BatchUnhook(
+                uriCreateThis.Value,
+                responseGetNormalizedFilename.Value,
+                nosCreateInternal.Value,
+                directoryInternalMove.Value,
+                getFullPathInternalOriginal.Value,
+                normalizePathOriginal.Value);
+            if (errors != null)
+                throw errors;
         }
 
         /// <summary>
@@ -512,9 +489,14 @@ namespace Chessar
 
             TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch); // comment 'in' for PVS
 
-            return needPatch
+            var newPath = needPatch
                 ? NormalizePathPatched(path, true, short.MaxValue)
                 : NormalizePath4(path, true, short.MaxValue);
+
+            if (string.Equals(cType?.Name, "StringExpressionSet"))
+                newPath = newPath.RemoveLongPathPrefix();
+
+            return newPath;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -530,9 +512,10 @@ namespace Chessar
 
             // Path
             t == typeof(Path) && fn != null && (
-                fn.StartsWith("System.Web.", StringComparison.Ordinal) ||
+                fn.StartsWith("System.Web.", StringComparison.Ordinal) /*||
                 fn.StartsWith("System.CodeDom.", StringComparison.Ordinal) ||
-                fn.StartsWith("System.Drawing.IntSecurity", StringComparison.Ordinal)))/*||
+                fn.StartsWith("System.Configuration.Internal.", StringComparison.Ordinal) ||
+                fn.StartsWith("System.Drawing.IntSecurity", StringComparison.Ordinal)*/))/*||
 
             // AppDomainSetup (https://referencesource.microsoft.com/#mscorlib/system/AppDomainSetup.cs,881)
             t == typeof(AppDomainSetup) ||
