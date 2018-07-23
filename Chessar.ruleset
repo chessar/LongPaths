@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Chessar Full Rule Set" Description="All Rules exclude:&#xD;&#xA; CA1704: Identifiers should be spelled correctly;&#xD;&#xA; CA2243: Attribute string literals should parse correctly." ToolsVersion="15.0">
+<RuleSet Name="Chessar Full Rule Set" Description="All Rules exclude:&#xD;&#xA; CA1704: Identifiers should be spelled correctly;&#xD;&#xA; CA2204: Literals should be spelled correctly." ToolsVersion="15.0">
   <Include Path="allrules.ruleset" Action="Default" />
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1704" Action="None" />
-    <Rule Id="CA2243" Action="None" />
+    <Rule Id="CA2204" Action="None" />
   </Rules>
 </RuleSet>

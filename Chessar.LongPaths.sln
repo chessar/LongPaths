@@ -50,6 +50,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "AspNetForms", "Examples\Asp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "Examples\ConsoleApp\ConsoleApp.csproj", "{68C7EA89-38C0-4E42-B69B-E33950A776F9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{9CE52439-0750-447D-A9E3-79886E908E31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{68C7EA89-38C0-4E42-B69B-E33950A776F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68C7EA89-38C0-4E42-B69B-E33950A776F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68C7EA89-38C0-4E42-B69B-E33950A776F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CE52439-0750-447D-A9E3-79886E908E31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CE52439-0750-447D-A9E3-79886E908E31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CE52439-0750-447D-A9E3-79886E908E31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE52439-0750-447D-A9E3-79886E908E31}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

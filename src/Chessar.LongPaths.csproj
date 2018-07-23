@@ -41,12 +41,12 @@
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.0.5</VersionPrefix>
+    <VersionPrefix>1.0.6</VersionPrefix>
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Fix for System.Configuration.Configuration.SaveAs</PackageReleaseNotes>
+    <PackageReleaseNotes>Improved performance</PackageReleaseNotes>
     <Description>$(AssemblyName) is a .NET library that allows you to enable long path support for the main System.IO classes (and others).
 It is based on replacing with JMP hooks, internal functions in System.IO.Path (NormalizePath and GetFullPathInternal), which adds prefixes (\\?\ or \\?\UNC\) for paths to files/folders.
 In this case, your code does not need to directly add such prefixes to the paths.

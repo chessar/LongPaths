@@ -82,10 +82,9 @@ using static Chessar.Hooks;
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
 
 # TODO
-1. Speed up MethodInfo.Invoke in the class [`Hooks`](https://github.com/chessar/LongPaths/blob/master/src/Hooks.cs), using, for example, [`DynamicMethod.CreateDelegate`](https://docs.microsoft.com/ru-ru/dotnet/api/system.reflection.emit.dynamicmethod.createdelegate#System_Reflection_Emit_DynamicMethod_CreateDelegate_System_Type_System_Object_).
-2. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
-3. Add more unit tests.
-4. Make hooks more thread safe.
+1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
+2. Add more unit tests.
+3. Make hooks more thread safe.
 
 # License
 MIT - See [LICENSE](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)

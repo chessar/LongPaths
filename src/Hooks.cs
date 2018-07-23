@@ -16,6 +16,11 @@ using System.Security.AccessControl;
 using System.Web;
 using System.Web.Hosting;
 using static Chessar.HookManager;
+using GetResourceStringFunc = System.Func<string, object[], string>;
+using IsPathRootedFunc = System.Func<string, bool>;
+using LongPathDirectoryMoveAction = System.Action<string, string>;
+using NormalizePathFunc = System.Func<string, bool, int, bool, string>;
+using StringToStringFunc = System.Func<string, string>; // AddLongPathPrefix, RemoveLongPathPrefix, GetResourceString
 
 namespace Chessar
 {
@@ -44,38 +49,55 @@ namespace Chessar
         private static readonly BindingFlags
             privateStatic = BindingFlags.NonPublic | BindingFlags.Static,
             privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+
+        #region Lazy Delegates
+
+        private static readonly Lazy<NormalizePathFunc>
+            normalizePath4 = new Lazy<NormalizePathFunc>(() =>
+                (NormalizePathFunc)typeof(Path).GetMethod("NormalizePath", privateStatic, null,
+                    new[] { typeof(string), typeof(bool), typeof(int), typeof(bool) }, null)
+                        .CreateDelegate(typeof(NormalizePathFunc)));
+        private static readonly Lazy<LongPathDirectoryMoveAction>
+            longPathDirectoryMove = new Lazy<LongPathDirectoryMoveAction>(() =>
+                (LongPathDirectoryMoveAction)Type.GetType("System.IO.LongPathDirectory")
+                    .GetMethod("Move", privateStatic, null, new[] { typeof(string), typeof(string) }, null)
+                        .CreateDelegate(typeof(LongPathDirectoryMoveAction)));
+        private static readonly Lazy<StringToStringFunc>
+            addLongPathPrefix = new Lazy<StringToStringFunc>(() =>
+                (StringToStringFunc)typeof(Path).GetMethod("AddLongPathPrefix", privateStatic, null,
+                    new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc))),
+            removeLongPathPrefix = new Lazy<StringToStringFunc>(() =>
+                (StringToStringFunc)typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null,
+                    new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc))),
+            envGetResourceString1 = new Lazy<StringToStringFunc>(() =>
+                (StringToStringFunc)typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
+                    new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc)));
+        private static readonly Lazy<GetResourceStringFunc>
+            envGetResourceString2 = new Lazy<GetResourceStringFunc>(() =>
+                (GetResourceStringFunc)typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
+                    new[] { typeof(string), typeof(object[]) }, null).CreateDelegate(typeof(GetResourceStringFunc)));
+        private static readonly Lazy<IsPathRootedFunc>
+            isPathRooted = new Lazy<IsPathRootedFunc>(() =>
+                (IsPathRootedFunc)Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)
+                    .CreateDelegate(typeof(IsPathRootedFunc)));
+
+        #endregion
+
+        #region Lazy Reflection
+
         private static readonly Lazy<MethodInfo>
-            normalizePathOriginal = new Lazy<MethodInfo>(() =>
+            normalizePathOriginal = new Lazy<MethodInfo>(() => 
                 typeof(Path).GetMethod("NormalizePath", privateStatic, null,
                     new[] { typeof(string), typeof(bool), typeof(int) }, null)),
             getFullPathInternalOriginal = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("GetFullPathInternal", privateStatic)),
-            normalizePath4 = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("NormalizePath", privateStatic, null,
-                    new[] { typeof(string), typeof(bool), typeof(int), typeof(bool) }, null)),
             directoryInternalMove = new Lazy<MethodInfo>(() =>
                 typeof(Directory).GetMethod("InternalMove", privateStatic, null,
                     new[] { typeof(string), typeof(string), typeof(bool) }, null)),
-            longPathDirectoryMove = new Lazy<MethodInfo>(() =>
-                Type.GetType("System.IO.LongPathDirectory").GetMethod("Move", privateStatic, null,
-                    new[] { typeof(string), typeof(string) }, null)),
-            addLongPathPrefix = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("AddLongPathPrefix", privateStatic)),
-            removeLongPathPrefix = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null,
-                    new[] { typeof(string) }, null)),
             nosCreateInternal = new Lazy<MethodInfo>(() =>
                 typeof(NativeObjectSecurity).GetMethod("CreateInternal", privateStatic)),
-            envGetResourceString1 = new Lazy<MethodInfo>(() =>
-                typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
-                    new[] { typeof(string) }, null)),
-            envGetResourceString2 = new Lazy<MethodInfo>(() =>
-                typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
-                    new[] { typeof(string), typeof(object[]) }, null)),
             win32GetSecurityInfo = new Lazy<MethodInfo>(() =>
                 Type.GetType("System.Security.AccessControl.Win32").GetMethod("GetSecurityInfo", privateStatic)),
-            isPathRooted = new Lazy<MethodInfo>(() =>
-                Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)),
             responseGetNormalizedFilename = new Lazy<MethodInfo>(() =>
                 typeof(HttpResponse).GetMethod("GetNormalizedFilename", privateInstance)),
             uriCreateThis = new Lazy<MethodInfo>(() =>
@@ -86,11 +108,13 @@ namespace Chessar
                 typeof(Uri).GetMethod("InitializeUri", privateInstance));
         private static Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
             (typeof(CommonSecurityDescriptor)).GetConstructors(privateInstance)
-            ?.FirstOrDefault(ci => ci.GetParameters().Length == 4));
+                ?.FirstOrDefault(ci => ci.GetParameters().Length == 4));
         private static Lazy<FieldInfo>
             mStringUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_String", privateInstance)),
             mFlagsUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Flags", privateInstance)),
             mSyntaxUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Syntax", privateInstance));
+
+        #endregion
 
         #endregion
 
@@ -247,7 +271,8 @@ namespace Chessar
         {
             try
             {
-                return (string)addLongPathPrefix.Value?.Invoke(null, new object[] { path }) ?? path;
+                return addLongPathPrefix.Value is null
+                    ? path : addLongPathPrefix.Value(path);
             }
             catch (TargetInvocationException ex)
             {
@@ -267,7 +292,8 @@ namespace Chessar
         {
             try
             {
-                return (string)removeLongPathPrefix.Value?.Invoke(null, new object[] { path }) ?? path;
+                return removeLongPathPrefix.Value is null
+                    ? path : removeLongPathPrefix.Value(path);
             }
             catch (TargetInvocationException ex)
             {
@@ -318,7 +344,7 @@ namespace Chessar
             try
             {
                 // If it's not a physical path, call MapPath on it
-                if (!(bool)isPathRooted.Value.Invoke(null, new object[] { fn }))
+                if (!isPathRooted.Value(fn))
                 {
                     var fldInfo = typeof(HttpResponse).GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance);
                     var context = fldInfo.GetValue(response) as HttpContext;
@@ -332,6 +358,10 @@ namespace Chessar
 
                 return fn.AddLongPathPrefix();
             }
+            catch (NullReferenceException)
+            {
+                throw new MissingMethodException("Method System.IO.LongPath.IsPathRooted(string) not found.");
+            }
             catch (TargetInvocationException ex)
             {
                 if (ex.InnerException != null)
@@ -343,12 +373,10 @@ namespace Chessar
         private delegate Exception ExceptionFromErrorCode(int errorCode, string name, SafeHandle handle, object context);
 
         [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string EnvGetResString(string key) => (string)envGetResourceString1
-            .Value.Invoke(null, new object[] { key });
+        private static string EnvGetResString(string key) => envGetResourceString1.Value(key);
 
         [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string EnvGetResString(string key, params object[] values) => (string)envGetResourceString2
-            .Value.Invoke(null, new object[] { key, values });
+        private static string EnvGetResString(string key, params object[] values) => envGetResourceString2.Value(key, values);
 
         [MethodImpl(MethodImplOptions.NoInlining)] // required
         private static CommonSecurityDescriptor NosCreateInternalPatched(ResourceType resourceType,
@@ -416,8 +444,11 @@ namespace Chessar
         {
             try
             {
-                return (string)normalizePath4.Value.Invoke(null,
-                    new object[] { path, fullCheck, maxPathLength, true });
+                return normalizePath4.Value(path, fullCheck, maxPathLength, true);
+            }
+            catch (NullReferenceException)
+            {
+                throw new MissingMethodException("Method System.IO.Path.NormalizePath(string, bool, int, bool) not found.");
             }
             catch (TargetInvocationException ex)
             {
@@ -445,8 +476,11 @@ namespace Chessar
         {
             try
             {
-                longPathDirectoryMove.Value.Invoke(null,
-                    new object[] { sourceDirName, destDirName });
+                longPathDirectoryMove.Value(sourceDirName, destDirName);
+            }
+            catch (NullReferenceException)
+            {
+                throw new MissingMethodException("Method System.IO.LongPathDirectory.Move(string, string) not found.");
             }
             catch (TargetInvocationException ex)
             {
@@ -511,17 +545,7 @@ namespace Chessar
             t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (
 
             // Path
-            t == typeof(Path) && fn != null && (
-                fn.StartsWith("System.Web.", StringComparison.Ordinal) /*||
-                fn.StartsWith("System.CodeDom.", StringComparison.Ordinal) ||
-                fn.StartsWith("System.Configuration.Internal.", StringComparison.Ordinal) ||
-                fn.StartsWith("System.Drawing.IntSecurity", StringComparison.Ordinal)*/))/*||
-
-            // AppDomainSetup (https://referencesource.microsoft.com/#mscorlib/system/AppDomainSetup.cs,881)
-            t == typeof(AppDomainSetup) ||
-
-            // ConfigTreeParser (https://referencesource.microsoft.com/#mscorlib/system/cfgparser.cs,274)
-            string.Equals(t.Name, "ConfigTreeParser")*/
+            t == typeof(Path) && fn != null && fn.StartsWith("System.Web.", StringComparison.Ordinal))
         );
 
         [Conditional("TRACE"), MethodImpl(MethodImplOptions.AggressiveInlining)]
