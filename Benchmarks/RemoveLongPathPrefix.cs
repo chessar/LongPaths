@@ -4,8 +4,8 @@ using F = System.Func<string, string>;
 
 namespace Chessar.Benchmarks
 {
-    [BenchmarkCategory(nameof(AddLongPathPrefix))]
-    public class AddLongPathPrefix : BenchmarkBase<F>
+    [BenchmarkCategory(nameof(RemoveLongPathPrefix))]
+    public class RemoveLongPathPrefix : BenchmarkBase<F>
     {
         private string path;
 
@@ -13,7 +13,7 @@ namespace Chessar.Benchmarks
         {
             path = Path.GetRandomFileName();
             args = new[] { path };
-            method = typeof(Path).GetMethod("AddLongPathPrefix", privateStatic, null, new[] { typeof(string) }, null);
+            method = typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null, new[] { typeof(string) }, null);
         }
 
         [Benchmark(Baseline = true)]

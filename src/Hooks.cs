@@ -76,8 +76,8 @@ namespace Chessar
             envGetResourceString2 = new Lazy<GetResourceStringFunc>(() =>
                 (GetResourceStringFunc)typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
                     new[] { typeof(string), typeof(object[]) }, null).CreateDelegate(typeof(GetResourceStringFunc)));
-        private static readonly Lazy<IsPathRootedFunc>
-            isPathRooted = new Lazy<IsPathRootedFunc>(() =>
+        internal static readonly Lazy<IsPathRootedFunc>
+            IsPathRooted = new Lazy<IsPathRootedFunc>(() =>
                 (IsPathRootedFunc)Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)
                     .CreateDelegate(typeof(IsPathRootedFunc)));
 
@@ -344,9 +344,9 @@ namespace Chessar
             try
             {
                 // If it's not a physical path, call MapPath on it
-                if (!isPathRooted.Value(fn))
+                if (!IsPathRooted.Value(fn))
                 {
-                    var fldInfo = typeof(HttpResponse).GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var fldInfo = typeof(HttpResponse).GetField("_context", privateInstance);
                     var context = fldInfo.GetValue(response) as HttpContext;
                     var request = context?.Request;
 

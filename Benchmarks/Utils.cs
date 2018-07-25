@@ -9,6 +9,20 @@ namespace Chessar.Benchmarks
 {
     internal static class Utils
     {
+        internal static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
+        {
+            if (toCheck.IsAbstract)
+                return false;
+            while (toCheck != null && toCheck != typeof(object))
+            {
+                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+                if (generic == cur)
+                    return true;
+                toCheck = toCheck.BaseType;
+            }
+            return false;
+        }
+
         internal static Delegate MakeDelegate(this MethodInfo method, Type targetType = null)
         {
             if (method is null)
