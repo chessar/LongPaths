@@ -7,18 +7,16 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Web;
 using System.Web.Hosting;
 using static Chessar.HookManager;
-using GetResourceStringFunc = System.Func<string, object[], string>;
 using IsPathRootedFunc = System.Func<string, bool>;
-using LongPathDirectoryMoveAction = System.Action<string, string>;
 using NormalizePathFunc = System.Func<string, bool, int, bool, string>;
 using StringToStringFunc = System.Func<string, string>; // AddLongPathPrefix, RemoveLongPathPrefix, GetResourceString
 
@@ -29,21 +27,6 @@ namespace Chessar
     /// </summary>
     public static partial class Hooks
     {
-        #region Consts
-
-        // Error codes from WinError.h
-        private const int
-            ERROR_SUCCESS = 0x0,
-            ERROR_FILE_NOT_FOUND = 0x2,
-            ERROR_ACCESS_DENIED = 0x5,
-            ERROR_INVALID_PARAMETER = 0x57,
-            ERROR_INVALID_NAME = 0x7B,
-            ERROR_INVALID_OWNER = 0x51B,
-            ERROR_INVALID_PRIMARY_GROUP = 0x51C,
-            ERROR_NO_SECURITY_ON_OBJECT = 0x546;
-
-        #endregion
-
         #region Fields
 
         private static readonly BindingFlags
@@ -57,25 +40,13 @@ namespace Chessar
                 (NormalizePathFunc)typeof(Path).GetMethod("NormalizePath", privateStatic, null,
                     new[] { typeof(string), typeof(bool), typeof(int), typeof(bool) }, null)
                         .CreateDelegate(typeof(NormalizePathFunc)));
-        private static readonly Lazy<LongPathDirectoryMoveAction>
-            longPathDirectoryMove = new Lazy<LongPathDirectoryMoveAction>(() =>
-                (LongPathDirectoryMoveAction)Type.GetType("System.IO.LongPathDirectory")
-                    .GetMethod("Move", privateStatic, null, new[] { typeof(string), typeof(string) }, null)
-                        .CreateDelegate(typeof(LongPathDirectoryMoveAction)));
         private static readonly Lazy<StringToStringFunc>
             addLongPathPrefix = new Lazy<StringToStringFunc>(() =>
                 (StringToStringFunc)typeof(Path).GetMethod("AddLongPathPrefix", privateStatic, null,
                     new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc))),
             removeLongPathPrefix = new Lazy<StringToStringFunc>(() =>
                 (StringToStringFunc)typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null,
-                    new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc))),
-            envGetResourceString1 = new Lazy<StringToStringFunc>(() =>
-                (StringToStringFunc)typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
                     new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc)));
-        private static readonly Lazy<GetResourceStringFunc>
-            envGetResourceString2 = new Lazy<GetResourceStringFunc>(() =>
-                (GetResourceStringFunc)typeof(Environment).GetMethod("GetResourceString", privateStatic, null,
-                    new[] { typeof(string), typeof(object[]) }, null).CreateDelegate(typeof(GetResourceStringFunc)));
         internal static readonly Lazy<IsPathRootedFunc>
             IsPathRooted = new Lazy<IsPathRootedFunc>(() =>
                 (IsPathRootedFunc)Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)
@@ -91,13 +62,8 @@ namespace Chessar
                     new[] { typeof(string), typeof(bool), typeof(int) }, null)),
             getFullPathInternalOriginal = new Lazy<MethodInfo>(() =>
                 typeof(Path).GetMethod("GetFullPathInternal", privateStatic)),
-            directoryInternalMove = new Lazy<MethodInfo>(() =>
-                typeof(Directory).GetMethod("InternalMove", privateStatic, null,
-                    new[] { typeof(string), typeof(string), typeof(bool) }, null)),
-            nosCreateInternal = new Lazy<MethodInfo>(() =>
-                typeof(NativeObjectSecurity).GetMethod("CreateInternal", privateStatic)),
-            win32GetSecurityInfo = new Lazy<MethodInfo>(() =>
-                Type.GetType("System.Security.AccessControl.Win32").GetMethod("GetSecurityInfo", privateStatic)),
+            getSecurityInfoByNameOriginal = new Lazy<MethodInfo>(() =>
+                Type.GetType("Microsoft.Win32.Win32Native").GetMethod("GetSecurityInfoByName", privateStatic)),
             responseGetNormalizedFilename = new Lazy<MethodInfo>(() =>
                 typeof(HttpResponse).GetMethod("GetNormalizedFilename", privateInstance)),
             uriCreateThis = new Lazy<MethodInfo>(() =>
@@ -105,10 +71,12 @@ namespace Chessar
             uriParseScheme = new Lazy<MethodInfo>(() =>
                 typeof(Uri).GetMethod("ParseScheme", privateStatic)),
             uriInitializeUri = new Lazy<MethodInfo>(() =>
-                typeof(Uri).GetMethod("InitializeUri", privateInstance));
-        private static Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
-            (typeof(CommonSecurityDescriptor)).GetConstructors(privateInstance)
-                ?.FirstOrDefault(ci => ci.GetParameters().Length == 4));
+                typeof(Uri).GetMethod("InitializeUri", privateInstance)),
+            win32NativeMoveFileOriginal = new Lazy<MethodInfo>(() =>
+                Type.GetType("Microsoft.Win32.Win32Native").GetMethod("MoveFile", privateStatic)),
+            gdipSaveImageToFileOriginal = new Lazy<MethodInfo>(() =>
+                AppDomain.CurrentDomain.Load("System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")
+                    .GetType("System.Drawing.SafeNativeMethods+Gdip").GetMethod("GdipSaveImageToFile", privateStatic));
         private static Lazy<FieldInfo>
             mStringUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_String", privateInstance)),
             mFlagsUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Flags", privateInstance)),
@@ -182,30 +150,15 @@ namespace Chessar
                 throw;
             }
 
-            // patch Directory.InternalMove(string, string, bool)
-            try
-            {
-                if (longPathDirectoryMove.Value != null)
-                    Hook(directoryInternalMove.Value,
-                        typeof(Hooks).GetMethod(nameof(DirectoryMovePatched), privateStatic));
-            }
-            catch
-            {
-                BatchUnhook(getFullPathInternalOriginal.Value, normalizePathOriginal.Value);
-                throw;
-            }
-
             // patch NativeObjectSecurity.CreateInternal
             try
             {
-                if (nosCreateInternal.Value != null)
-                    Hook(nosCreateInternal.Value,
-                        typeof(Hooks).GetMethod(nameof(NosCreateInternalPatched), privateStatic));
+                Hook(getSecurityInfoByNameOriginal.Value,
+                    typeof(Hooks).GetMethod(nameof(GetSecurityInfoByNamePatched), privateStatic));
             }
             catch
             {
-                BatchUnhook(directoryInternalMove.Value,
-                    getFullPathInternalOriginal.Value,
+                BatchUnhook(getFullPathInternalOriginal.Value,
                     normalizePathOriginal.Value);
                 throw;
             }
@@ -218,8 +171,7 @@ namespace Chessar
             }
             catch
             {
-                BatchUnhook(nosCreateInternal.Value,
-                    directoryInternalMove.Value,
+                BatchUnhook(getSecurityInfoByNameOriginal.Value,
                     getFullPathInternalOriginal.Value,
                     normalizePathOriginal.Value);
                 throw;
@@ -234,8 +186,40 @@ namespace Chessar
             catch
             {
                 BatchUnhook(responseGetNormalizedFilename.Value,
-                    nosCreateInternal.Value,
-                    directoryInternalMove.Value,
+                    getSecurityInfoByNameOriginal.Value,
+                    getFullPathInternalOriginal.Value,
+                    normalizePathOriginal.Value);
+                throw;
+            }
+
+            // patch Win32Native.MoveFile(string src, string dst)
+            try
+            {
+                Hook(win32NativeMoveFileOriginal.Value,
+                    typeof(Hooks).GetMethod(nameof(NativeMoveFilePatched), privateStatic));
+            }
+            catch
+            {
+                BatchUnhook(uriCreateThis.Value,
+                    responseGetNormalizedFilename.Value,
+                    getSecurityInfoByNameOriginal.Value,
+                    getFullPathInternalOriginal.Value,
+                    normalizePathOriginal.Value);
+                throw;
+            }
+
+            // patch GdipSaveImageToFile
+            try
+            {
+                Hook(gdipSaveImageToFileOriginal.Value,
+                    typeof(Hooks).GetMethod(nameof(GdipSaveImageToFilePatched), privateStatic));
+            }
+            catch
+            {
+                BatchUnhook(win32NativeMoveFileOriginal.Value,
+                    uriCreateThis.Value,
+                    responseGetNormalizedFilename.Value,
+                    getSecurityInfoByNameOriginal.Value,
                     getFullPathInternalOriginal.Value,
                     normalizePathOriginal.Value);
                 throw;
@@ -251,10 +235,11 @@ namespace Chessar
         public static void RemoveLongPathsPatch()
         {
             var errors = BatchUnhook(
+                gdipSaveImageToFileOriginal.Value,
+                win32NativeMoveFileOriginal.Value,
                 uriCreateThis.Value,
                 responseGetNormalizedFilename.Value,
-                nosCreateInternal.Value,
-                directoryInternalMove.Value,
+                getSecurityInfoByNameOriginal.Value,
                 getFullPathInternalOriginal.Value,
                 normalizePathOriginal.Value);
             if (errors != null)
@@ -304,6 +289,34 @@ namespace Chessar
         }
 
         #region Private
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static uint GetSecurityInfoByNamePatched(
+            string name,
+            uint objectType,
+            uint securityInformation,
+            out IntPtr sidOwner,
+            out IntPtr sidGroup,
+            out IntPtr dacl,
+            out IntPtr sacl,
+            out IntPtr securityDescriptor) => NativeMethods.GetSecurityInfoByName(
+                name?.AddLongPathPrefix(),
+                objectType,
+                securityInformation,
+                out sidOwner,
+                out sidGroup,
+                out dacl,
+                out sacl,
+                out securityDescriptor);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static int GdipSaveImageToFilePatched(HandleRef image, string filename,
+            ref Guid classId, HandleRef encoderParams) => NativeMethods.GdipSaveImageToFile(
+                image, filename?.AddLongPathPrefix(), ref classId, encoderParams);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool NativeMoveFilePatched(string src, string dst)
+            => NativeMethods.MoveFile(src?.AddLongPathPrefix(), dst?.AddLongPathPrefix());
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void UriCreateThisPatched(Uri thisUri, string uri, bool dontEscape, UriKind uriKind)
@@ -370,75 +383,6 @@ namespace Chessar
             }
         }
 
-        private delegate Exception ExceptionFromErrorCode(int errorCode, string name, SafeHandle handle, object context);
-
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string EnvGetResString(string key) => envGetResourceString1.Value(key);
-
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string EnvGetResString(string key, params object[] values) => envGetResourceString2.Value(key, values);
-
-        [MethodImpl(MethodImplOptions.NoInlining)] // required
-        private static CommonSecurityDescriptor NosCreateInternalPatched(ResourceType resourceType,
-            bool isContainer, string name, SafeHandle handle, AccessControlSections includeSections,
-            bool createByName, ExceptionFromErrorCode exceptionFromErrorCode, object exceptionContext)
-        {
-            if (createByName && name is null)
-                throw new ArgumentNullException(nameof(name));
-            else if (!createByName && handle is null)
-                throw new ArgumentNullException(nameof(handle));
-            Contract.EndContractBlock();
-
-            try
-            {
-                object[] parameters = { resourceType, name?.AddLongPathPrefix(), handle, includeSections, null };
-                var error = (int)win32GetSecurityInfo.Value.Invoke(null, parameters);
-
-                if (error != ERROR_SUCCESS)
-                {
-                    Exception exception = null;
-
-                    if (exceptionFromErrorCode != null)
-                        exception = exceptionFromErrorCode(error, name, handle, exceptionContext);
-
-                    if (exception is null)
-                    {
-                        if (error == ERROR_ACCESS_DENIED)
-                            exception = new UnauthorizedAccessException();
-                        else if (error == ERROR_INVALID_OWNER)
-                            exception = new InvalidOperationException(EnvGetResString("AccessControl_InvalidOwner"));
-                        else if (error == ERROR_INVALID_PRIMARY_GROUP)
-                            exception = new InvalidOperationException(EnvGetResString("AccessControl_InvalidGroup"));
-                        else if (error == ERROR_INVALID_PARAMETER)
-                            exception = new InvalidOperationException(EnvGetResString("AccessControl_UnexpectedError", error));
-                        else if (error == ERROR_INVALID_NAME)
-                            exception = new ArgumentException(EnvGetResString("Argument_InvalidName"), nameof(name));
-                        else if (error == ERROR_FILE_NOT_FOUND)
-                            exception = (name is null ? new FileNotFoundException() : new FileNotFoundException(name));
-                        else if (error == ERROR_NO_SECURITY_ON_OBJECT)
-                            exception = new NotSupportedException(EnvGetResString("AccessControl_NoAssociatedSecurity"));
-                        else
-                        {
-                            Contract.Assert(false, string.Format(CultureInfo.InvariantCulture, "Win32GetSecurityInfo() failed with unexpected error code {0}", error));
-                            exception = new InvalidOperationException(EnvGetResString("AccessControl_UnexpectedError", error));
-                        }
-                    }
-
-                    throw exception;
-                }
-
-                var rawSD = (RawSecurityDescriptor)parameters[parameters.Length - 1];
-                return (CommonSecurityDescriptor)csdCtor.Value
-                    ?.Invoke(new object[] { isContainer, false, rawSD, true });
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string NormalizePath4(string path, bool fullCheck, int maxPathLength)
         {
@@ -468,26 +412,6 @@ namespace Chessar
                 return AddLongPathPrefix(normalizedPath);
 
             return normalizedPath;
-        }
-
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters")]
-        [MethodImpl(MethodImplOptions.NoInlining)] // required
-        private static void DirectoryMovePatched(string sourceDirName, string destDirName, bool checkHost)
-        {
-            try
-            {
-                longPathDirectoryMove.Value(sourceDirName, destDirName);
-            }
-            catch (NullReferenceException)
-            {
-                throw new MissingMethodException("Method System.IO.LongPathDirectory.Move(string, string) not found.");
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
@@ -564,6 +488,41 @@ namespace Chessar
                 return;
             Trace.TraceError("[GetFullPathInternal StackTrace Exception]:\r\n{0}", ex);
             Trace.Flush();
+        }
+
+        #endregion
+
+        #region Natives
+
+        private static class NativeMethods
+        {
+            [DllImport(
+                "advapi32.dll",
+                EntryPoint = "GetNamedSecurityInfoW",
+                CallingConvention = CallingConvention.Winapi,
+                SetLastError = true,
+                ExactSpelling = true,
+                CharSet = CharSet.Unicode)]
+            [ResourceExposure(ResourceScope.None)]
+            internal static extern uint GetSecurityInfoByName(
+               string name,
+               uint objectType,
+               uint securityInformation,
+               out IntPtr sidOwner,
+               out IntPtr sidGroup,
+               out IntPtr dacl,
+               out IntPtr sacl,
+               out IntPtr securityDescriptor);
+
+            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto, BestFitMapping = false)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            [ResourceExposure(ResourceScope.Machine)]
+            internal static extern bool MoveFile(string src, string dst);
+
+            [DllImport("gdiplus.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
+            [ResourceExposure(ResourceScope.None)]
+            internal static extern int GdipSaveImageToFile(HandleRef image, string filename,
+                ref Guid classId, HandleRef encoderParams);
         }
 
         #endregion
