@@ -65,20 +65,7 @@ var fullName = fileInfo.FullName; // with long path prefix
 See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 
 # Notes
-For the following list of ctors/methods, you must directly specify the prefix of long paths
-(because they are not supported by this library, see [Unit Tests](https://github.com/chessar/LongPaths/tree/master/UnitTests)):
-* [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
-* [`Image.Save(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.save)
-
-for example:
-```csharp
-...
-using static Chessar.Hooks;
-...
-    directoryInfo.MoveTo(path.AddLongPathPrefix());
-```
-
-**Note** that, next methods does not work for long paths, even if a prefix is added:
+Next methods does not work for long paths, even if a prefix is added:
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
 
 # TODO
