@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -12,13 +13,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Security.AccessControl;
 using System.Web;
 using System.Web.Hosting;
 using static Chessar.HookManager;
-using IsPathRootedFunc = System.Func<string, bool>;
 using NormalizePathFunc = System.Func<string, bool, int, bool, string>;
-using StringToStringFunc = System.Func<string, string>; // AddLongPathPrefix, RemoveLongPathPrefix, GetResourceString
+using StringToBoolFunc = System.Func<string, bool>; // IsPathRooted
+using StringToStringFunc = System.Func<string, string>; // AddLongPathPrefix, RemoveLongPathPrefix
 
 namespace Chessar
 {
@@ -47,201 +47,94 @@ namespace Chessar
             removeLongPathPrefix = new Lazy<StringToStringFunc>(() =>
                 (StringToStringFunc)typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null,
                     new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc)));
-        internal static readonly Lazy<IsPathRootedFunc>
-            IsPathRooted = new Lazy<IsPathRootedFunc>(() =>
-                (IsPathRootedFunc)Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)
-                    .CreateDelegate(typeof(IsPathRootedFunc)));
+        internal static readonly Lazy<StringToBoolFunc>
+            IsPathRooted = new Lazy<StringToBoolFunc>(() =>
+                (StringToBoolFunc)Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)
+                    .CreateDelegate(typeof(StringToBoolFunc)));
 
         #endregion
 
         #region Lazy Reflection
 
+        private static Lazy<Type>
+            win32NativeType = new Lazy<Type>(() => Type.GetType("Microsoft.Win32.Win32Native"));
+
+        private static readonly Lazy<MethodInfo[]> originals = new Lazy<MethodInfo[]>(() => new MethodInfo[]
+        {
+            typeof(Path).GetMethod("NormalizePath", privateStatic, null, new[] { typeof(string), typeof(bool), typeof(int) }, null),
+            typeof(Path).GetMethod("GetFullPathInternal", privateStatic),
+            win32NativeType.Value?.GetMethod("GetSecurityInfoByName", privateStatic),
+            win32NativeType.Value?.GetMethod("MoveFile", privateStatic),
+            typeof(HttpResponse).GetMethod("GetNormalizedFilename", privateInstance),
+            typeof(Image).Assembly.GetType("System.Drawing.SafeNativeMethods+Gdip")?.GetMethod("GdipSaveImageToFile", privateStatic),
+            typeof(Uri).GetMethod("CreateThis", privateInstance)
+        });
+
         private static readonly Lazy<MethodInfo>
-            normalizePathOriginal = new Lazy<MethodInfo>(() => 
-                typeof(Path).GetMethod("NormalizePath", privateStatic, null,
-                    new[] { typeof(string), typeof(bool), typeof(int) }, null)),
-            getFullPathInternalOriginal = new Lazy<MethodInfo>(() =>
-                typeof(Path).GetMethod("GetFullPathInternal", privateStatic)),
-            getSecurityInfoByNameOriginal = new Lazy<MethodInfo>(() =>
-                Type.GetType("Microsoft.Win32.Win32Native").GetMethod("GetSecurityInfoByName", privateStatic)),
-            responseGetNormalizedFilename = new Lazy<MethodInfo>(() =>
-                typeof(HttpResponse).GetMethod("GetNormalizedFilename", privateInstance)),
-            uriCreateThis = new Lazy<MethodInfo>(() =>
-                typeof(Uri).GetMethod("CreateThis", privateInstance)),
-            uriParseScheme = new Lazy<MethodInfo>(() =>
-                typeof(Uri).GetMethod("ParseScheme", privateStatic)),
-            uriInitializeUri = new Lazy<MethodInfo>(() =>
-                typeof(Uri).GetMethod("InitializeUri", privateInstance)),
-            win32NativeMoveFileOriginal = new Lazy<MethodInfo>(() =>
-                Type.GetType("Microsoft.Win32.Win32Native").GetMethod("MoveFile", privateStatic)),
-            gdipSaveImageToFileOriginal = new Lazy<MethodInfo>(() =>
-                AppDomain.CurrentDomain.Load("System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")
-                    .GetType("System.Drawing.SafeNativeMethods+Gdip").GetMethod("GdipSaveImageToFile", privateStatic));
+            uriParseScheme = new Lazy<MethodInfo>(() => typeof(Uri).GetMethod("ParseScheme", privateStatic)),
+            uriInitializeUri = new Lazy<MethodInfo>(() => typeof(Uri).GetMethod("InitializeUri", privateInstance));
         private static Lazy<FieldInfo>
             mStringUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_String", privateInstance)),
             mFlagsUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Flags", privateInstance)),
-            mSyntaxUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Syntax", privateInstance));
+            mSyntaxUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Syntax", privateInstance)),
+            _context = new Lazy<FieldInfo>(() => typeof(HttpResponse).GetField("_context", privateInstance));
 
         #endregion
 
         #endregion
+
+        #region Public
 
         /// <summary>
-        /// Patch <see langword="internal static"/> methods
-        /// <para>
-        /// <see cref="Path"/>.NormalizePath(<see langword="string"/> path,
-        /// <see langword="bool"/> fullCheck, <see langword="int"/> maxPathLength)
-        /// </para>
-        /// for <see cref="FileStream"/>, and
-        /// <para>
-        /// <see cref="Path"/>.GetFullPathInternal(<see langword="string"/> path),
-        /// <see cref="Directory"/>.InternalMove(<see langword="string"/> sourceDirName, <see langword="string"/> destDirName, <see langword="bool"/> checkHost),
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal(...),
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename(<see langword="string"/> fn),
-        /// <see cref="Uri"/>.CreateThis(<see langword="string"/> uri, <see langword="bool"/> dontEscape, <see cref="UriKind"/> uriKind)
-        /// </para><para>
-        /// for methods from <see cref="File"/>, <see cref="FileInfo"/>,
-        /// <see cref="Directory"/>, <see cref="DirectoryInfo"/>, etc..
-        /// </para>
+        /// Patch <see langword="internal/private static"/>
+        /// methods in <see cref="Path"/> class (and others)
         /// using JMP hook for support long paths.
-        /// <para>
         /// Patched method adding long path prefix <see langword="\\?\"/>
-        /// (or <see langword="\\?\UNC\"/> for network shares)
-        /// if <see langword="fullCheck"/>=<see langword="true"/> and
-        /// <see langword="maxPathLength"/>=<see cref="short.MaxValue"/>.
-        /// </para>
+        /// (or <see langword="\\?\UNC\"/> for network shares) if needed.
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// If the <see cref="Path"/>.NormalizePath,
-        /// <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
-        /// <see cref="Uri"/>.CreateThis
-        /// not found.
+        /// If no methods are found for the patches.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If the <see cref="Path"/>.NormalizePath,
-        /// <see cref="Path"/>.GetFullPathInternal,
-        /// <see cref="Directory"/>.InternalMove,
-        /// <see cref="NativeObjectSecurity"/>.CreateInternal,
-        /// <see cref="HttpResponse"/>.GetNormalizedFilename or
-        /// <see cref="Uri"/>.CreateThis
-        /// is already hooked.
+        /// If one or more methods are already patched.
         /// </exception>
         /// <exception cref="Win32Exception">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
         public static void PatchLongPaths()
         {
-            // patch NormalizePath(string, bool, int) for FileStream
-            Hook(normalizePathOriginal.Value,
-                typeof(Hooks).GetMethod(nameof(NormalizePathPatched), privateStatic));
-
-            // patch GetFullPathInternal(string) for IO methods
+            MethodInfo[] methods = null;
             try
             {
-                Hook(getFullPathInternalOriginal.Value,
-                    typeof(Hooks).GetMethod(nameof(GetFullPathInternalPatched), privateStatic));
+                methods = originals.Value;
+                var len = methods?.Length ?? 0;
+                if (len == 0)
+                    throw new ArgumentException("There are no methods for patch.");
+                var thisType = typeof(Hooks);
+                for (int i = 0; i < len; ++i)
+                {
+                    var method = methods[i];
+                    if (method is null)
+                        throw new ArgumentNullException(nameof(method) + i.ToString(CultureInfo.InvariantCulture));
+                    Hook(method, thisType.GetMethod(method.Name + "Patched", privateStatic));
+                }
             }
             catch
             {
-                BatchUnhook(normalizePathOriginal.Value);
-                throw;
-            }
-
-            // patch NativeObjectSecurity.CreateInternal
-            try
-            {
-                Hook(getSecurityInfoByNameOriginal.Value,
-                    typeof(Hooks).GetMethod(nameof(GetSecurityInfoByNamePatched), privateStatic));
-            }
-            catch
-            {
-                BatchUnhook(getFullPathInternalOriginal.Value,
-                    normalizePathOriginal.Value);
-                throw;
-            }
-
-            // patch HttpResponse.GetNormalizedFilename
-            try
-            {
-                Hook(responseGetNormalizedFilename.Value,
-                    typeof(Hooks).GetMethod(nameof(GetNormalizedFilenamePatched), privateStatic));
-            }
-            catch
-            {
-                BatchUnhook(getSecurityInfoByNameOriginal.Value,
-                    getFullPathInternalOriginal.Value,
-                    normalizePathOriginal.Value);
-                throw;
-            }
-
-            // patch Uri.CreateThis(string, bool, UriKind)
-            try
-            {
-                Hook(uriCreateThis.Value,
-                    typeof(Hooks).GetMethod(nameof(UriCreateThisPatched), privateStatic));
-            }
-            catch
-            {
-                BatchUnhook(responseGetNormalizedFilename.Value,
-                    getSecurityInfoByNameOriginal.Value,
-                    getFullPathInternalOriginal.Value,
-                    normalizePathOriginal.Value);
-                throw;
-            }
-
-            // patch Win32Native.MoveFile(string src, string dst)
-            try
-            {
-                Hook(win32NativeMoveFileOriginal.Value,
-                    typeof(Hooks).GetMethod(nameof(NativeMoveFilePatched), privateStatic));
-            }
-            catch
-            {
-                BatchUnhook(uriCreateThis.Value,
-                    responseGetNormalizedFilename.Value,
-                    getSecurityInfoByNameOriginal.Value,
-                    getFullPathInternalOriginal.Value,
-                    normalizePathOriginal.Value);
-                throw;
-            }
-
-            // patch GdipSaveImageToFile
-            try
-            {
-                Hook(gdipSaveImageToFileOriginal.Value,
-                    typeof(Hooks).GetMethod(nameof(GdipSaveImageToFilePatched), privateStatic));
-            }
-            catch
-            {
-                BatchUnhook(win32NativeMoveFileOriginal.Value,
-                    uriCreateThis.Value,
-                    responseGetNormalizedFilename.Value,
-                    getSecurityInfoByNameOriginal.Value,
-                    getFullPathInternalOriginal.Value,
-                    normalizePathOriginal.Value);
+                BatchUnhook(methods);
                 throw;
             }
         }
 
         /// <summary>
-        /// Remove long path support patch.
+        /// Remove long path support patches.
         /// </summary>
         /// <exception cref="AggregateException">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
         public static void RemoveLongPathsPatch()
         {
-            var errors = BatchUnhook(
-                gdipSaveImageToFileOriginal.Value,
-                win32NativeMoveFileOriginal.Value,
-                uriCreateThis.Value,
-                responseGetNormalizedFilename.Value,
-                getSecurityInfoByNameOriginal.Value,
-                getFullPathInternalOriginal.Value,
-                normalizePathOriginal.Value);
+            var errors = BatchUnhook(originals.Value);
             if (errors != null)
                 throw errors;
         }
@@ -288,121 +181,11 @@ namespace Chessar
             }
         }
 
-        #region Private
+        #endregion
+
+        #region Patches (required NoInlining)
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static uint GetSecurityInfoByNamePatched(
-            string name,
-            uint objectType,
-            uint securityInformation,
-            out IntPtr sidOwner,
-            out IntPtr sidGroup,
-            out IntPtr dacl,
-            out IntPtr sacl,
-            out IntPtr securityDescriptor) => NativeMethods.GetSecurityInfoByName(
-                name?.AddLongPathPrefix(),
-                objectType,
-                securityInformation,
-                out sidOwner,
-                out sidGroup,
-                out dacl,
-                out sacl,
-                out securityDescriptor);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static int GdipSaveImageToFilePatched(HandleRef image, string filename,
-            ref Guid classId, HandleRef encoderParams) => NativeMethods.GdipSaveImageToFile(
-                image, filename?.AddLongPathPrefix(), ref classId, encoderParams);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool NativeMoveFilePatched(string src, string dst)
-            => NativeMethods.MoveFile(src?.AddLongPathPrefix(), dst?.AddLongPathPrefix());
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void UriCreateThisPatched(Uri thisUri, string uri, bool dontEscape, UriKind uriKind)
-        {
-            try
-            {
-                uri = uri?.RemoveLongPathPrefix();
-                mStringUriFld.Value.SetValue(thisUri, uri ?? string.Empty);
-                var flagsLong = (ulong)mFlagsUriFld.Value.GetValue(thisUri);
-                if (dontEscape)
-                    flagsLong |= 0x00080000;
-                var flags = Enum.Parse(mFlagsUriFld.Value.FieldType, flagsLong.ToString(CultureInfo.InvariantCulture));
-                var mSyntax = mSyntaxUriFld.Value.GetValue(thisUri);
-
-                object[] args = { uri, flags, mSyntax };
-                var err = uriParseScheme.Value.Invoke(null, args);
-
-                mFlagsUriFld.Value.SetValue(thisUri, args[1]);
-                mSyntaxUriFld.Value.SetValue(thisUri, args[2]);
-
-                args = new [] { err, uriKind, null };
-                uriInitializeUri.Value.Invoke(thisUri, args);
-
-                if (args[2] is UriFormatException e)
-                    throw e;
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
-        }
-
-        [Pure, MethodImpl(MethodImplOptions.NoInlining)] // required
-        private static string GetNormalizedFilenamePatched(HttpResponse response, string fn)
-        {
-            try
-            {
-                // If it's not a physical path, call MapPath on it
-                if (!IsPathRooted.Value(fn))
-                {
-                    var fldInfo = typeof(HttpResponse).GetField("_context", privateInstance);
-                    var context = fldInfo.GetValue(response) as HttpContext;
-                    var request = context?.Request;
-
-                    if (request != null)
-                        fn = request.MapPath(fn); // relative to current request
-                    else
-                        fn = HostingEnvironment.MapPath(fn);
-                }
-
-                return fn.AddLongPathPrefix();
-            }
-            catch (NullReferenceException)
-            {
-                throw new MissingMethodException("Method System.IO.LongPath.IsPathRooted(string) not found.");
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string NormalizePath4(string path, bool fullCheck, int maxPathLength)
-        {
-            try
-            {
-                return normalizePath4.Value(path, fullCheck, maxPathLength, true);
-            }
-            catch (NullReferenceException)
-            {
-                throw new MissingMethodException("Method System.IO.Path.NormalizePath(string, bool, int, bool) not found.");
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)] // required
         private static string NormalizePathPatched(string path, bool fullCheck, int maxPathLength)
         {
             var normalizedPath = NormalizePath4(path, fullCheck, maxPathLength);
@@ -415,7 +198,7 @@ namespace Chessar
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        [MethodImpl(MethodImplOptions.NoInlining)] // required
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private static string GetFullPathInternalPatched(string path)
         {
             if (path is null)
@@ -455,6 +238,116 @@ namespace Chessar
                 newPath = newPath.RemoveLongPathPrefix();
 
             return newPath;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static uint GetSecurityInfoByNamePatched(
+            string name,
+            uint objectType,
+            uint securityInformation,
+            out IntPtr sidOwner,
+            out IntPtr sidGroup,
+            out IntPtr dacl,
+            out IntPtr sacl,
+            out IntPtr securityDescriptor) => NativeMethods.GetSecurityInfoByName(
+                name?.AddLongPathPrefix(),
+                objectType,
+                securityInformation,
+                out sidOwner,
+                out sidGroup,
+                out dacl,
+                out sacl,
+                out securityDescriptor);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool MoveFilePatched(string src, string dst)
+            => NativeMethods.MoveFile(src?.AddLongPathPrefix(), dst?.AddLongPathPrefix());
+
+        [Pure, MethodImpl(MethodImplOptions.NoInlining)]
+        private static string GetNormalizedFilenamePatched(HttpResponse response, string fn)
+        {
+            try
+            {
+                // If it's not a physical path, call MapPath on it
+                if (!IsPathRooted.Value(fn))
+                {
+                    var request = (_context.Value?.GetValue(response) as HttpContext)?.Request;
+                    fn = request != null ? request.MapPath(fn) : HostingEnvironment.MapPath(fn);
+                }
+
+                return fn.AddLongPathPrefix();
+            }
+            catch (NullReferenceException)
+            {
+                throw new MissingMethodException("Method System.IO.LongPath.IsPathRooted(string) not found.");
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static int GdipSaveImageToFilePatched(HandleRef image, string filename,
+            ref Guid classId, HandleRef encoderParams) => NativeMethods.GdipSaveImageToFile(
+                image, filename?.AddLongPathPrefix(), ref classId, encoderParams);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void CreateThisPatched(Uri thisUri, string uri, bool dontEscape, UriKind uriKind)
+        {
+            try
+            {
+                uri = uri?.RemoveLongPathPrefix();
+                mStringUriFld.Value.SetValue(thisUri, uri ?? string.Empty);
+                var flagsLong = (ulong)mFlagsUriFld.Value.GetValue(thisUri);
+                if (dontEscape)
+                    flagsLong |= 0x00080000;
+                var flags = Enum.Parse(mFlagsUriFld.Value.FieldType, flagsLong.ToString(CultureInfo.InvariantCulture));
+                var mSyntax = mSyntaxUriFld.Value.GetValue(thisUri);
+
+                object[] args = { uri, flags, mSyntax };
+                var err = uriParseScheme.Value.Invoke(null, args);
+
+                mFlagsUriFld.Value.SetValue(thisUri, args[1]);
+                mSyntaxUriFld.Value.SetValue(thisUri, args[2]);
+
+                args = new[] { err, uriKind, null };
+                uriInitializeUri.Value.Invoke(thisUri, args);
+
+                if (args[2] is UriFormatException e)
+                    throw e;
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region Utils
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string NormalizePath4(string path, bool fullCheck, int maxPathLength)
+        {
+            try
+            {
+                return normalizePath4.Value(path, fullCheck, maxPathLength, true);
+            }
+            catch (NullReferenceException)
+            {
+                throw new MissingMethodException("Method System.IO.Path.NormalizePath(string, bool, int, bool) not found.");
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

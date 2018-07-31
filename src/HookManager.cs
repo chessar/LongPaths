@@ -83,38 +83,13 @@ namespace Chessar
             hooks.TryAdd(original, PatchJMP(original, replacement));
         }
 
-        ///// <summary>
-        ///// Unhooks a previously hooked Method. Method must have already been hooked.
-        ///// </summary>
-        ///// <param name="original">Previously hooked <see cref="MethodInfo"/>.</param>
-        ///// <exception cref="ArgumentNullException">
-        ///// If <paramref name="original"/> are <see langword="null"/>.
-        ///// </exception>
-        ///// <exception cref="ArgumentException">
-        ///// If <paramref name="original"/> method was never hooked.
-        ///// </exception>
-        ///// <exception cref="Win32Exception">
-        ///// If a native call fails. This is unrecoverable.
-        ///// </exception>
-        //internal static unsafe void Unhook(MethodInfo original)
-        //{
-        //    if (original is null)
-        //        throw new ArgumentNullException(nameof(original));
-        //    if (!hooks.TryGetValue(original, out byte[] originalOpcodes))
-        //        throw new ArgumentException("Method {0} was never hooked".Format(original), nameof(original));
-        //    Contract.EndContractBlock();
-
-        //    UnhookJMP(original, originalOpcodes);
-        //    hooks.TryRemove(original, out _);
-        //}
-
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         internal static Exception BatchUnhook(params MethodInfo[] methods)
         {
             if (methods is null || methods.Length == 0)
                 return null;
             var errors = new List<Exception>(methods.Length);
-            for (int i = 0; i < methods.Length; ++i)
+            for (int i = methods.Length - 1; i >= 0; i--)
             {
                 var m = methods[i];
                 if (m is null)
@@ -129,13 +104,14 @@ namespace Chessar
                 try
                 {
                     UnhookJMP(m, originalOpcodes);
-                    hooks.TryRemove(m, out _);
                 }
                 catch (Exception ex)
                 {
                     errors.Add(ex);
                     TraceException(ex);
+                    continue;
                 }
+                hooks.TryRemove(m, out _);
             }
             return (errors.Count > 1) ? new AggregateException(errors.ToArray())
                 : errors.Count == 1 ? errors[0] : null;
