@@ -1,4 +1,11 @@
-# Chessar.LongPaths
+# ![Chessar.LongPaths](icon.png "Chessar.LongPaths")&nbsp;Chessar.LongPaths
+
+[![Version](https://img.shields.io/nuget/v/Chessar.LongPaths.svg)](https://www.nuget.org/packages/Chessar.LongPaths)
+[![Downloads](https://img.shields.io/nuget/dt/Chessar.LongPaths.svg)](https://www.nuget.org/packages/Chessar.LongPaths)
+[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)
+![Platforms](https://img.shields.io/badge/platform-windows-lightgray.svg)
+![Language](https://img.shields.io/badge/language-c%23-orange.svg)
+![Coverage](https://img.shields.io/badge/coverage-100%25-yellow.svg)
 
 **Chessar.LongPaths** is a .NET library that allows you to enable long path support for the main
 [`System.IO`](https://docs.microsoft.com/en-us/dotnet/api/system.io)
@@ -70,8 +77,7 @@ Next methods does not work for long paths, even if a prefix is added:
 
 # TODO
 1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
-2. Add more unit tests.
-3. Make hooks more thread safe.
+2. Make hooks more thread safe.
 
 # License
 MIT - See [LICENSE](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)

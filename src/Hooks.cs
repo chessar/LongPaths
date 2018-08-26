@@ -3,21 +3,18 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Web;
 using System.Web.Hosting;
 using static Chessar.HookManager;
 using NormalizePathFunc = System.Func<string, bool, int, bool, string>;
-using StringToBoolFunc = System.Func<string, bool>; // IsPathRooted
 using StringToStringFunc = System.Func<string, string>; // AddLongPathPrefix, RemoveLongPathPrefix
 
 namespace Chessar
@@ -32,25 +29,24 @@ namespace Chessar
         private static readonly BindingFlags
             privateStatic = BindingFlags.NonPublic | BindingFlags.Static,
             privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+        private static readonly Type
+            tPath = typeof(Path),
+            tString = typeof(string),
+            tBool = typeof(bool),
+            tInt = typeof(int),
+            tHttpResponse = typeof(HttpResponse),
+            tUri = typeof(Uri);
 
         #region Lazy Delegates
 
         private static readonly Lazy<NormalizePathFunc>
-            normalizePath4 = new Lazy<NormalizePathFunc>(() =>
-                (NormalizePathFunc)typeof(Path).GetMethod("NormalizePath", privateStatic, null,
-                    new[] { typeof(string), typeof(bool), typeof(int), typeof(bool) }, null)
-                        .CreateDelegate(typeof(NormalizePathFunc)));
+            normalizePath4 = new Lazy<NormalizePathFunc>(() => ToDelegate<NormalizePathFunc>(
+                tPath, "NormalizePath", privateStatic, tString, tBool, tInt, tBool));
         private static readonly Lazy<StringToStringFunc>
-            addLongPathPrefix = new Lazy<StringToStringFunc>(() =>
-                (StringToStringFunc)typeof(Path).GetMethod("AddLongPathPrefix", privateStatic, null,
-                    new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc))),
-            removeLongPathPrefix = new Lazy<StringToStringFunc>(() =>
-                (StringToStringFunc)typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null,
-                    new[] { typeof(string) }, null).CreateDelegate(typeof(StringToStringFunc)));
-        internal static readonly Lazy<StringToBoolFunc>
-            IsPathRooted = new Lazy<StringToBoolFunc>(() =>
-                (StringToBoolFunc)Type.GetType("System.IO.LongPath").GetMethod("IsPathRooted", privateStatic)
-                    .CreateDelegate(typeof(StringToBoolFunc)));
+            addLongPathPrefix = new Lazy<StringToStringFunc>(() => ToDelegate<StringToStringFunc>(
+                tPath, "AddLongPathPrefix", privateStatic, tString)),
+            removeLongPathPrefix = new Lazy<StringToStringFunc>(() => ToDelegate<StringToStringFunc>(
+                tPath, "RemoveLongPathPrefix", privateStatic, tString));
 
         #endregion
 
@@ -61,23 +57,24 @@ namespace Chessar
 
         private static readonly Lazy<MethodInfo[]> originals = new Lazy<MethodInfo[]>(() => new MethodInfo[]
         {
-            typeof(Path).GetMethod("NormalizePath", privateStatic, null, new[] { typeof(string), typeof(bool), typeof(int) }, null),
-            typeof(Path).GetMethod("GetFullPathInternal", privateStatic),
-            win32NativeType.Value?.GetMethod("GetSecurityInfoByName", privateStatic),
-            win32NativeType.Value?.GetMethod("MoveFile", privateStatic),
-            typeof(HttpResponse).GetMethod("GetNormalizedFilename", privateInstance),
-            typeof(Image).Assembly.GetType("System.Drawing.SafeNativeMethods+Gdip")?.GetMethod("GdipSaveImageToFile", privateStatic),
-            typeof(Uri).GetMethod("CreateThis", privateInstance)
+            GetMethod(tPath, "NormalizePath", privateStatic, tString, tBool, tInt),
+            GetMethod(tPath, "GetFullPathInternal", privateStatic),
+            GetMethod(win32NativeType.Value, "MoveFile", privateStatic),
+            GetMethod(win32NativeType.Value, "GetSecurityInfoByName", privateStatic),
+            GetMethod(tHttpResponse, "GetNormalizedFilename", privateInstance),
+            GetMethod(typeof(Image).Assembly.GetType("System.Drawing.SafeNativeMethods+Gdip"), "GdipSaveImageToFile", privateStatic),
+            GetMethod(tUri, "CreateThis", privateInstance)
         });
 
         private static readonly Lazy<MethodInfo>
-            uriParseScheme = new Lazy<MethodInfo>(() => typeof(Uri).GetMethod("ParseScheme", privateStatic)),
-            uriInitializeUri = new Lazy<MethodInfo>(() => typeof(Uri).GetMethod("InitializeUri", privateInstance));
+            uriParseScheme = new Lazy<MethodInfo>(() => GetMethod(tUri, "ParseScheme", privateStatic)),
+            uriInitializeUri = new Lazy<MethodInfo>(() => GetMethod(tUri, "InitializeUri", privateInstance));
         private static Lazy<FieldInfo>
-            mStringUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_String", privateInstance)),
-            mFlagsUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Flags", privateInstance)),
-            mSyntaxUriFld = new Lazy<FieldInfo>(() => typeof(Uri).GetField("m_Syntax", privateInstance)),
-            _context = new Lazy<FieldInfo>(() => typeof(HttpResponse).GetField("_context", privateInstance));
+            mStringUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_String", privateInstance)),
+            mFlagsUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_Flags", privateInstance)),
+            mSyntaxUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_Syntax", privateInstance));
+        internal static Lazy<PropertyInfo>
+            responseContext = new Lazy<PropertyInfo>(() => tHttpResponse.GetProperty("Context", privateInstance));
 
         #endregion
 
@@ -107,15 +104,11 @@ namespace Chessar
             try
             {
                 methods = originals.Value;
-                var len = methods?.Length ?? 0;
-                if (len == 0)
-                    throw new ArgumentException("There are no methods for patch.");
+                var len = methods.Length;
                 var thisType = typeof(Hooks);
                 for (int i = 0; i < len; ++i)
                 {
                     var method = methods[i];
-                    if (method is null)
-                        throw new ArgumentNullException(nameof(method) + i.ToString(CultureInfo.InvariantCulture));
                     Hook(method, thisType.GetMethod(method.Name + "Patched", privateStatic));
                 }
             }
@@ -144,20 +137,17 @@ namespace Chessar
         /// </summary>
         /// <param name="path">Path.</param>
         /// <returns>Path with long prefix.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="path"/> is <see langword="null"/>.
+        /// </exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string AddLongPathPrefix(this string path)
         {
-            try
-            {
-                return addLongPathPrefix.Value is null
-                    ? path : addLongPathPrefix.Value(path);
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
+            if (path is null)
+                throw new ArgumentNullException(nameof(path));
+            Contract.EndContractBlock();
+
+            return addLongPathPrefix.Value(path);
         }
 
         /// <summary>
@@ -165,20 +155,17 @@ namespace Chessar
         /// </summary>
         /// <param name="path">Path.</param>
         /// <returns>Path without long prefix.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="path"/> is <see langword="null"/>.
+        /// </exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string RemoveLongPathPrefix(this string path)
         {
-            try
-            {
-                return removeLongPathPrefix.Value is null
-                    ? path : removeLongPathPrefix.Value(path);
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
+            if (path is null)
+                throw new ArgumentNullException(nameof(path));
+            Contract.EndContractBlock();
+
+            return removeLongPathPrefix.Value(path);
         }
 
         #endregion
@@ -188,7 +175,7 @@ namespace Chessar
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static string NormalizePathPatched(string path, bool fullCheck, int maxPathLength)
         {
-            var normalizedPath = NormalizePath4(path, fullCheck, maxPathLength);
+            var normalizedPath = normalizePath4.Value(path, fullCheck, maxPathLength, true);
 
             // fix for extend path with long prefix
             if (fullCheck && short.MaxValue == maxPathLength)
@@ -197,7 +184,6 @@ namespace Chessar
             return normalizedPath;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static string GetFullPathInternalPatched(string path)
         {
@@ -205,36 +191,22 @@ namespace Chessar
                 throw new ArgumentNullException(nameof(path));
             Contract.EndContractBlock();
 
-            StackTrace st = null;
-            Type cType = null;
-            string ccTypeFullName = null;
-            var isGetTempPath = false;
-            try
-            {
-                st = new StackTrace(1, false);
-                if (st.FrameCount > 0)
-                {
-                    var cMethod = st.GetFrame(0)?.GetMethod();
-                    cType = cMethod?.DeclaringType;
-                    isGetTempPath = (cType == typeof(Path) && string.Equals("GetTempPath", cMethod?.Name));
-                    if (!isGetTempPath && st.FrameCount > 1)
-                        ccTypeFullName = st.GetFrame(1)?.GetMethod()?.DeclaringType?.FullName;
-                }
-            }
-            catch (Exception ex)
-            {
-                TraceGetFullPathInternalPatchedError(ex, cType);
-            }
+            var sti = GetStackTrace(2);
+            var st = sti.Item1;
+            var cType = sti.Item2;
+            var ccTypeFullName = sti.Item3;
+            var isGetTempPath = sti.Item4;
+            var needRemoveLongPrefix = false;
 
-            var needPatch = !isGetTempPath && st != null && NeedPatch(cType, ccTypeFullName);
+            var needPatch = !isGetTempPath && st != null && NeedPatch(cType, ccTypeFullName, out needRemoveLongPrefix);
 
             TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch); // comment 'in' for PVS
 
             var newPath = needPatch
                 ? NormalizePathPatched(path, true, short.MaxValue)
-                : NormalizePath4(path, true, short.MaxValue);
+                : normalizePath4.Value(path, true, short.MaxValue, true);
 
-            if (string.Equals(cType?.Name, "StringExpressionSet"))
+            if (needRemoveLongPrefix)
                 newPath = newPath.RemoveLongPathPrefix();
 
             return newPath;
@@ -250,7 +222,7 @@ namespace Chessar
             out IntPtr dacl,
             out IntPtr sacl,
             out IntPtr securityDescriptor) => NativeMethods.GetSecurityInfoByName(
-                name?.AddLongPathPrefix(),
+                AddLongPathPrefix(name),
                 objectType,
                 securityInformation,
                 out sidOwner,
@@ -261,112 +233,138 @@ namespace Chessar
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static bool MoveFilePatched(string src, string dst)
-            => NativeMethods.MoveFile(src?.AddLongPathPrefix(), dst?.AddLongPathPrefix());
+            => NativeMethods.MoveFile(AddLongPathPrefix(src), AddLongPathPrefix(dst));
 
         [Pure, MethodImpl(MethodImplOptions.NoInlining)]
         private static string GetNormalizedFilenamePatched(HttpResponse response, string fn)
         {
-            try
+            // If it's not a physical path, call MapPath on it
+            if (!IsAbsolutePhysicalPath(fn))
             {
-                // If it's not a physical path, call MapPath on it
-                if (!IsPathRooted.Value(fn))
-                {
-                    var request = (_context.Value?.GetValue(response) as HttpContext)?.Request;
-                    fn = request != null ? request.MapPath(fn) : HostingEnvironment.MapPath(fn);
-                }
+                var request = (responseContext.Value.GetValue(response) as HttpContext)?.Request;
+                fn = request != null ? request.MapPath(fn) : HostingEnvironment.MapPath(fn);
+            }
 
-                return fn.AddLongPathPrefix();
-            }
-            catch (NullReferenceException)
-            {
-                throw new MissingMethodException("Method System.IO.LongPath.IsPathRooted(string) not found.");
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
+            return AddLongPathPrefix(fn);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static int GdipSaveImageToFilePatched(HandleRef image, string filename,
             ref Guid classId, HandleRef encoderParams) => NativeMethods.GdipSaveImageToFile(
-                image, filename?.AddLongPathPrefix(), ref classId, encoderParams);
+                image, AddLongPathPrefix(filename), ref classId, encoderParams);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void CreateThisPatched(Uri thisUri, string uri, bool dontEscape, UriKind uriKind)
         {
-            try
-            {
-                uri = uri?.RemoveLongPathPrefix();
-                mStringUriFld.Value.SetValue(thisUri, uri ?? string.Empty);
-                var flagsLong = (ulong)mFlagsUriFld.Value.GetValue(thisUri);
-                if (dontEscape)
-                    flagsLong |= 0x00080000;
-                var flags = Enum.Parse(mFlagsUriFld.Value.FieldType, flagsLong.ToString(CultureInfo.InvariantCulture));
-                var mSyntax = mSyntaxUriFld.Value.GetValue(thisUri);
+            uri = RemoveLongPathPrefix(uri);
+            mStringUriFld.Value.SetValue(thisUri, uri);
+            var flagsLong = (ulong)mFlagsUriFld.Value.GetValue(thisUri);
+            if (dontEscape)
+                flagsLong |= 0x00080000;
+            var flags = Enum.Parse(mFlagsUriFld.Value.FieldType, flagsLong.ToString(CultureInfo.InvariantCulture));
+            var mSyntax = mSyntaxUriFld.Value.GetValue(thisUri);
 
-                object[] args = { uri, flags, mSyntax };
-                var err = uriParseScheme.Value.Invoke(null, args);
+            object[] args = { uri, flags, mSyntax };
+            var err = uriParseScheme.Value.Invoke(null, args);
 
-                mFlagsUriFld.Value.SetValue(thisUri, args[1]);
-                mSyntaxUriFld.Value.SetValue(thisUri, args[2]);
+            mFlagsUriFld.Value.SetValue(thisUri, args[1]);
+            mSyntaxUriFld.Value.SetValue(thisUri, args[2]);
 
-                args = new[] { err, uriKind, null };
-                uriInitializeUri.Value.Invoke(thisUri, args);
+            args = new[] { err, uriKind, null };
+            uriInitializeUri.Value.Invoke(thisUri, args);
 
-                if (args[2] is UriFormatException e)
-                    throw e;
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
+            if (args[2] is UriFormatException e)
+                throw e;
         }
 
         #endregion
 
         #region Utils
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string NormalizePath4(string path, bool fullCheck, int maxPathLength)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static Tuple<StackTrace, Type, string, bool> GetStackTrace(in int skipFrames)
         {
+            StackTrace st = null;
+            Type cType = null;
+            string ccTypeFullName = null;
+            var isGetTempPath = false;
             try
             {
-                return normalizePath4.Value(path, fullCheck, maxPathLength, true);
+                st = new StackTrace(skipFrames, false);
+                var cMethod = st.GetFrame(0)?.GetMethod();
+                cType = cMethod?.DeclaringType;
+                isGetTempPath = (cType == tPath && string.Equals("GetTempPath", cMethod.Name));
+                if (!isGetTempPath)
+                    ccTypeFullName = st.GetFrame(1)?.GetMethod().DeclaringType.FullName;
             }
-            catch (NullReferenceException)
+            catch (ArgumentOutOfRangeException ex)
             {
-                throw new MissingMethodException("Method System.IO.Path.NormalizePath(string, bool, int, bool) not found.");
+                TraceGetFullPathInternalPatchedError(ex, cType);
             }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException != null)
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
+
+            return new Tuple<StackTrace, Type, string, bool>(st, cType, ccTypeFullName, isGetTempPath);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool NeedPatch(Type t, string fn) => t is null ||
-        // exclude types for patch, see references to Path.GetFullPathInternal
-        // https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,72f9fabbc9d544a5,references
-        !(
-            // StringExpressionSet (https://referencesource.microsoft.com/#mscorlib/system/security/util/stringexpressionset.cs,755)
-            string.Equals(t.Name, "StringExpressionSet") ||
 
-            // System.Reflection Namespace
-            t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (
+        internal static MethodInfo GetMethod(Type type, string name, BindingFlags bindingAttr)
+            => GetMethod(type, name, bindingAttr, null);
 
-            // Path
-            t == typeof(Path) && fn != null && fn.StartsWith("System.Web.", StringComparison.Ordinal))
-        );
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static MethodInfo GetMethod(Type type, string name, BindingFlags bindingAttr, params Type[] parameters)
+        {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+            Contract.EndContractBlock();
+
+            var method = parameters is null ? type.GetMethod(name, bindingAttr) : type.GetMethod(name, bindingAttr, null, parameters, null);
+            if (method is null)
+                throw new MissingMethodException(string.Format(CultureInfo.InvariantCulture,
+                    "Method '{0}.{1}' not found", type.FullName, name));
+
+            return method;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static T ToDelegate<T>(Type type, string name, BindingFlags bindingAttr, params Type[] parameters)
+            where T : Delegate => (T)GetMethod(type, name, bindingAttr, parameters).CreateDelegate(typeof(T));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool IsAbsolutePhysicalPath(string path)
+        {
+            if (path is null || path.Length < 3)
+                return false;
+            // e.g c:\foo
+            if (path[1] == ':' && IsDirectorySeparatorChar(path[2]))
+                return true;
+            // e.g \\server\share\foo or //server/share/foo
+            return IsDirectorySeparatorChar(path[0]) && IsDirectorySeparatorChar(path[1]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsDirectorySeparatorChar(char ch) => ch == '\\' || ch == '/';
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool NeedPatch(Type t, string fn, out bool needRemoveLongPrefix)
+        {
+            needRemoveLongPrefix = false;
+            return (t is null) ||
+                // exclude types for patch, see references to Path.GetFullPathInternal
+                // https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,72f9fabbc9d544a5,references
+                !(
+                    // StringExpressionSet (https://referencesource.microsoft.com/#mscorlib/system/security/util/stringexpressionset.cs,755)
+                    (needRemoveLongPrefix = string.Equals(t.Name, "StringExpressionSet")) ||
+
+                    // System.Reflection Namespace
+                    t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (
+
+                    // Path
+                    t == tPath && fn != null && fn.StartsWith("System.Web.", StringComparison.Ordinal))
+                );
+        }
 
         [Conditional("TRACE"), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void TraceGetFullPathInternalPatchedInfo(StackTrace st, Type ct, in bool patched) // comment 'in' for PVS
+        internal static void TraceGetFullPathInternalPatchedInfo(StackTrace st, Type ct, in bool patched) // comment 'in' for PVS
         {
             if (ct?.IsSubclassOf(typeof(TraceListener)) ?? false)
                 return;
@@ -375,7 +373,7 @@ namespace Chessar
         }
 
         [Conditional("TRACE"), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void TraceGetFullPathInternalPatchedError(Exception ex, Type ct)
+        internal static void TraceGetFullPathInternalPatchedError(Exception ex, Type ct)
         {
             if (ex is null || (ct?.IsSubclassOf(typeof(TraceListener)) ?? false))
                 return;

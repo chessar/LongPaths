@@ -127,7 +127,7 @@ namespace Chessar
         [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string Format(this string format, MethodInfo method) => string.Format(CultureInfo.InvariantCulture,
             format, string.Format(CultureInfo.InvariantCulture, "[{0}.{1}]", method?.DeclaringType
-                ?.FullName ?? "<unknown type>", method?.Name ?? "<unknown name>"));
+                .FullName ?? "<unknown type>", method?.Name ?? "<unknown name>"));
 
         private static unsafe byte[] PatchJMP(MethodInfo original, MethodInfo replacement)
         {
@@ -219,11 +219,8 @@ namespace Chessar
             return oldProtection;
         }
 
-        private static void FlushInstructionCache(IntPtr address, uint size)
-        {
-            if (!NativeMethods.FlushInstructionCache(NativeMethods.GetCurrentProcess(), address, (UIntPtr)size))
-                throw new Win32Exception(Marshal.GetLastWin32Error());
-        }
+        private static void FlushInstructionCache(IntPtr address, uint size) =>
+            NativeMethods.FlushInstructionCache(NativeMethods.GetCurrentProcess(), address, (UIntPtr)size);
 
         #endregion
 

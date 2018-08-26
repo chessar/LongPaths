@@ -34,7 +34,7 @@ namespace Chessar.UnitTests.HookManager
             catch { }
             Hook(originalMethod, replacementMethod);
 
-            var hooksField = typeof(Chessar.HookManager).GetField("hooks", BindingFlags.NonPublic | BindingFlags.Static);
+            var hooksField = typeof(Chessar.HookManager).GetField("hooks", privateStatic);
             var hooks = (ConcurrentDictionary<MethodInfo, byte[]>)hooksField.GetValue(null);
             hooks[originalMethod] = new byte[0];
             var error = BatchUnhook(originalMethod);
