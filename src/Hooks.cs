@@ -200,7 +200,7 @@ namespace Chessar
 
             var needPatch = !isGetTempPath && st != null && NeedPatch(cType, ccTypeFullName, out needRemoveLongPrefix);
 
-            TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch); // comment 'in' for PVS
+            TraceGetFullPathInternalPatchedInfo(st, cType, in needPatch);
 
             var newPath = needPatch
                 ? NormalizePathPatched(path, true, short.MaxValue)
@@ -293,7 +293,7 @@ namespace Chessar
                 st = new StackTrace(skipFrames, false);
                 var cMethod = st.GetFrame(0)?.GetMethod();
                 cType = cMethod?.DeclaringType;
-                isGetTempPath = (cType == tPath && string.Equals("GetTempPath", cMethod.Name));
+                isGetTempPath = (cType == tPath && string.Equals("GetTempPath", cMethod.Name)); //-V3105
                 if (!isGetTempPath)
                     ccTypeFullName = st.GetFrame(1)?.GetMethod().DeclaringType.FullName;
             }
@@ -364,7 +364,7 @@ namespace Chessar
         }
 
         [Conditional("TRACE"), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void TraceGetFullPathInternalPatchedInfo(StackTrace st, Type ct, in bool patched) // comment 'in' for PVS
+        internal static void TraceGetFullPathInternalPatchedInfo(StackTrace st, Type ct, in bool patched)
         {
             if (ct?.IsSubclassOf(typeof(TraceListener)) ?? false)
                 return;
