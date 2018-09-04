@@ -7,6 +7,7 @@
     <LangVersion>latest</LangVersion>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>..\..\Chessar.snk</AssemblyOriginatorKeyFile>
@@ -16,8 +17,5 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Chessar.LongPaths.csproj" />
-    <None Include="..\..\Chessar.snk">
-      <Link>Chessar.snk</Link>
-    </None>
   </ItemGroup>
 </Project>

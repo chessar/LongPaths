@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup Label="Main">
+  <PropertyGroup>
     <Product>Long Path Support for .NET</Product>
     <Company>Chessar</Company>
     <RootNamespace>$(Company)</RootNamespace>
@@ -9,6 +9,7 @@
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <AssemblyOriginatorKeyFile>..\$(Company).snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -19,52 +20,49 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-
-  <ItemGroup Label="AdvItems">
-    <None Include="..\$(Company).snk">
-      <Link>$(Company).snk</Link>
-    </None>
-    <None Remove="*.nu*;*.zip;*.dll;*.exe;*.xdt" />
-    <Content Include="*.config.*install.xdt" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="System.Web" />
     <Reference Include="System.Drawing" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="*.nu*;*.zip;*.dll;*.exe;" />
+    <Content Include="content\*.config.*install.xdt">
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+      <PackagePath>content/net462</PackagePath>
+    </Content>
+  </ItemGroup>
+
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.0.8</VersionPrefix>
+    <VersionPrefix>1.0.9</VersionPrefix>
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Code refactor and coverage</PackageReleaseNotes>
+    <PackageReleaseNotes>Folder contentFiles is excluded from the package</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GithubContentUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/</GithubContentUrl>
+    <PackageLicenseUrl>$(GithubContentUrl)LICENSE.md</PackageLicenseUrl>
+    <PackageIconUrl>$(GithubContentUrl)icon.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/chessar/LongPaths</PackageProjectUrl>
+    <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>\\?\ long path jmp hook</PackageTags>
+    <NeutralLanguage>en</NeutralLanguage>
+    <IncludeDocumentationProjectOutputGroup>true</IncludeDocumentationProjectOutputGroup>
+    <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <Description>$(AssemblyName) is a .NET library that allows you to enable long path support for the main System.IO classes (and others).
 It is based on replacing with JMP hooks, internal functions in System.IO.Path (NormalizePath and GetFullPathInternal), which adds prefixes (\\?\ or \\?\UNC\) for paths to files/folders.
 In this case, your code does not need to directly add such prefixes to the paths.
 
 Supported platforms:
   .NET Framework 4.6.2+</Description>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/LICENSE.md</PackageLicenseUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/icon.png</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/chessar/LongPaths</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/chessar/LongPaths</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>long path jmp hook</PackageTags>
-    <NeutralLanguage>en</NeutralLanguage>
-    <IncludeDocumentationProjectOutputGroup>true</IncludeDocumentationProjectOutputGroup>
-    <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <Target Name="AfterClean" AfterTargets="Clean" Condition="'$(Configuration)' == 'Release'">

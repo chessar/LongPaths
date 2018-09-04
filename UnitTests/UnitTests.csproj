@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net462;netcoreapp2.1;</TargetFrameworks>
-    <RootNamespace>Chessar.UnitTests</RootNamespace>
     <AssemblyName>UnitTests</AssemblyName>
+    <RootNamespace>Chessar.$(UnitTests)</RootNamespace>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
     <LangVersion>latest</LangVersion>
@@ -30,10 +30,5 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Chessar.snk">
-      <Link>Chessar.snk</Link>
-    </None>
   </ItemGroup>
 </Project>
