@@ -65,18 +65,20 @@ Supported platforms:
   .NET Framework 4.6.2+</Description>
   </PropertyGroup>
 
-  <Target Name="AfterClean" AfterTargets="Clean" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="CustomAfterClean" AfterTargets="AfterClean" Condition="'$(Configuration)' == 'Release'">
     <ItemGroup>
       <ZipFilesToDelete Include="bin\$(Configuration)\*.zip" />
       <ZipFilesToDelete Include="bin\$(Configuration)\*.tmp*" />
       <ZipFilesToDelete Include="bin\$(Configuration)\*.nupkg" />
     </ItemGroup>
     <Delete Files="@(ZipFilesToDelete)" TreatErrorsAsWarnings="false" />
+    <Message Text="CustomAfterClean OK!" Importance="high" />
   </Target>
 
-  <Target Name="AfterBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="CustomAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
     <Delete Files="bin\$(Configuration)\$(AssemblyName).$(Version).zip" TreatErrorsAsWarnings="false" />
     <Exec Condition="Exists('7z.exe')" Command="7z.exe a -tzip &quot;bin\$(Configuration)\$(AssemblyName).$(Version).zip&quot; &quot;.\bin\$(Configuration)\**\*&quot; -x!*.tmp* -x!*.zip -x!*.nu* -x!*.json -x!*.last* -x!*.CodeAnalysisLog.xml -x!*.tmp -aoa -mx9 -r -ssw -y" />
+    <Message Text="CustomAfterBuild OK!" Importance="high" />
   </Target>
 
 </Project>
