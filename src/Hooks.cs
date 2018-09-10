@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Globalization;
@@ -16,7 +17,6 @@ using System.Web.Hosting;
 using static Chessar.HookManager;
 using NormalizePathFunc = System.Func<string, bool, int, bool, string>;
 using StringToStringFunc = System.Func<string, string>; // AddLongPathPrefix, RemoveLongPathPrefix
-
 namespace Chessar
 {
     /// <summary>
@@ -47,6 +47,9 @@ namespace Chessar
                 tPath, "AddLongPathPrefix", privateStatic, tString)),
             removeLongPathPrefix = new Lazy<StringToStringFunc>(() => ToDelegate<StringToStringFunc>(
                 tPath, "RemoveLongPathPrefix", privateStatic, tString));
+        private static readonly Lazy<LongPathDirectoryDeleteHelper>
+            longPathDirectoryDeleteHelper = new Lazy<LongPathDirectoryDeleteHelper>(() => ToDelegate<LongPathDirectoryDeleteHelper>(
+                Type.GetType("System.IO.LongPathDirectory"), "DeleteHelper", privateStatic, tString, tString, tBool, tBool));
 
         #endregion
 
@@ -59,6 +62,7 @@ namespace Chessar
         {
             GetMethod(tPath, "NormalizePath", privateStatic, tString, tBool, tInt),
             GetMethod(tPath, "GetFullPathInternal", privateStatic),
+            GetMethod(typeof(Directory), "Delete", privateStatic, tString, tString, tBool, tBool),
             GetMethod(win32NativeType.Value, "MoveFile", privateStatic),
             GetMethod(win32NativeType.Value, "GetSecurityInfoByName", privateStatic),
             GetMethod(tHttpResponse, "GetNormalizedFilename", privateInstance),
@@ -77,6 +81,13 @@ namespace Chessar
             responseContext = new Lazy<PropertyInfo>(() => tHttpResponse.GetProperty("Context", privateInstance));
 
         #endregion
+
+        #endregion
+
+        #region Delegates
+
+        private delegate void LongPathDirectoryDeleteHelper(
+            string fullPath, string userPath, bool recursive, bool throwOnTopLevelDirectoryNotFound);
 
         #endregion
 
@@ -211,6 +222,11 @@ namespace Chessar
 
             return newPath;
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [SuppressMessage("Microsoft.Usage", "CA1801: Review unused parameters")]
+        private static void DeletePatched(string fullPath, string userPath, bool recursive, bool checkHost)
+            => longPathDirectoryDeleteHelper.Value(fullPath, userPath, recursive, true);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static uint GetSecurityInfoByNamePatched(

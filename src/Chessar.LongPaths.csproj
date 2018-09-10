@@ -39,12 +39,12 @@
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.0.9</VersionPrefix>
+    <VersionPrefix>1.1.0</VersionPrefix>
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Folder contentFiles is excluded from the package</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix for the Directory.Delete method with a directory separator char at the end of the path</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GithubContentUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/</GithubContentUrl>
     <PackageLicenseUrl>$(GithubContentUrl)LICENSE.md</PackageLicenseUrl>

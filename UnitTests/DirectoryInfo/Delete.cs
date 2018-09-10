@@ -8,26 +8,48 @@ namespace Chessar.UnitTests
     partial class DirectoryInfoTests
     {
         [TestMethod]
-        public void DirectoryInfo_DeleteEmpty() => DirectoryInfoDelete(false, false);
+        public void DirectoryInfo_DeleteEmpty() => DirectoryInfoDelete(false, false, false);
 
         [TestMethod]
-        public void DirectoryInfo_DeleteEmpty_UNC() => DirectoryInfoDelete(false, true);
+        public void DirectoryInfo_DeleteEmpty_UNC() => DirectoryInfoDelete(false, false, true);
 
         [TestMethod]
-        public void DirectoryInfo_DeleteNotEmpty() => DirectoryInfoDelete(true, false);
+        public void DirectoryInfo_DeleteNotEmpty() => DirectoryInfoDelete(true, false, false);
 
         [TestMethod]
-        public void DirectoryInfo_DeleteNotEmpty_UNC() => DirectoryInfoDelete(true, true);
+        public void DirectoryInfo_DeleteNotEmpty_UNC() => DirectoryInfoDelete(true, false, true);
+
+        [TestMethod]
+        public void DirectoryInfo_DeleteEmptyWithSlash() => DirectoryInfoDelete(false, true, false);
+
+        [TestMethod]
+        public void DirectoryInfo_DeleteEmptyWithSlash_UNC() => DirectoryInfoDelete(false, true, true);
+
+        [TestMethod]
+        public void DirectoryInfo_DeleteNotEmptyWithSlash() => DirectoryInfoDelete(true, true, false);
+
+        [TestMethod]
+        public void DirectoryInfo_DeleteNotEmptyWithSlash_UNC() => DirectoryInfoDelete(true, true, true);
 
 
-        private static void DirectoryInfoDelete(in bool recursive, in bool asNetwork)
+        private static void DirectoryInfoDelete(in bool recursive, in bool withSlash, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
 
-            if (recursive)
-                File.CreateText($"{path}{Path.DirectorySeparatorChar}file.txt").Close();
+            path = path.TrimEnd(' ', '/', '\\');
+            if (withSlash)
+                path += Path.DirectorySeparatorChar;
 
-            new DirectoryInfo(path).Delete(recursive);
+            if (recursive)
+            {
+                Directory.CreateDirectory(Path.Combine(pathWithPrefix, "subfolder"));
+                File.CreateText($"{path}{Path.DirectorySeparatorChar}file.txt").Close();
+            }
+
+            if (recursive)
+                new DirectoryInfo(path).Delete(true);
+            else
+                new DirectoryInfo(path).Delete();
 
             IsFalse(Directory.Exists(pathWithPrefix));
         }
