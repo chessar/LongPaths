@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_Delete() => FileInfoDelete(false);
+        public void FileInfo_Delete() => FileInfoDelete(false, false);
 
         [TestMethod]
-        public void FileInfo_Delete_UNC() => FileInfoDelete(true);
+        public void FileInfo_Delete_UNC() => FileInfoDelete(false, true);
+
+        [TestMethod]
+        public void FileInfo_DeleteWithSlash() => FileInfoDelete(true, false);
+
+        [TestMethod]
+        public void FileInfo_DeleteWithSlash_UNC() => FileInfoDelete(true, true);
 
 
-        private static void FileInfoDelete(in bool asNetwork)
+        private static void FileInfoDelete(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var fi = new FileInfo(path);
 

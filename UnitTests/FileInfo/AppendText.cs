@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_AppendText() => FileInfoAppendText(false);
+        public void FileInfo_AppendText() => FileInfoAppendText(false, false);
 
         [TestMethod]
-        public void FileInfo_AppendText_UNC() => FileInfoAppendText(true);
+        public void FileInfo_AppendText_UNC() => FileInfoAppendText(false, true);
+
+        [TestMethod]
+        public void FileInfo_AppendTextWithSlash() => FileInfoAppendText(true, false);
+
+        [TestMethod]
+        public void FileInfo_AppendTextWithSlash_UNC() => FileInfoAppendText(true, true);
 
 
-        private static void FileInfoAppendText(in bool asNetwork)
+        private static void FileInfoAppendText(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork, in withSlash);
 
             var fi = new FileInfo(path);
 

@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_Open() => FileInfoOpen(false);
+        public void FileInfo_Open() => FileInfoOpen(false, false);
 
         [TestMethod]
-        public void FileInfo_Open_UNC() => FileInfoOpen(true);
+        public void FileInfo_Open_UNC() => FileInfoOpen(false, true);
+
+        [TestMethod]
+        public void FileInfo_OpenWithSlash() => FileInfoOpen(true, false);
+
+        [TestMethod]
+        public void FileInfo_OpenWithSlash_UNC() => FileInfoOpen(true, true);
 
 
-        private static void FileInfoOpen(in bool asNetwork)
+        private static void FileInfoOpen(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var fi = new FileInfo(path);
 

@@ -9,21 +9,33 @@ namespace Chessar.UnitTests
     partial class FileTests
     {
         [TestMethod]
-        public void File_GetTime() => FileGetSetTime(false, false);
+        public void File_GetTime() => FileGetSetTime(false, false, false);
 
         [TestMethod]
-        public void File_GetTime_UNC() => FileGetSetTime(false, true);
+        public void File_GetTime_UNC() => FileGetSetTime(false, false, true);
 
         [TestMethod]
-        public void File_GetTimeUtc() => FileGetSetTime(true, false);
+        public void File_GetTimeUtc() => FileGetSetTime(true, false, false);
 
         [TestMethod]
-        public void File_GetTimeUtc_UNC() => FileGetSetTime(true, true);
+        public void File_GetTimeUtc_UNC() => FileGetSetTime(true, false, true);
+
+        [TestMethod]
+        public void File_GetTimeWithSlash() => FileGetSetTime(false, true, false);
+
+        [TestMethod]
+        public void File_GetTimeWithSlash_UNC() => FileGetSetTime(false, true, true);
+
+        [TestMethod]
+        public void File_GetTimeUtcWithSlash() => FileGetSetTime(true, true, false);
+
+        [TestMethod]
+        public void File_GetTimeUtcWithSlash_UNC() => FileGetSetTime(true, true, true);
 
 
-        private static void FileGetSetTime(in bool isUtc, in bool asNetwork)
+        private static void FileGetSetTime(in bool isUtc, in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var d1 = isUtc ? File.GetCreationTimeUtc(path) : File.GetCreationTime(path);
             var d2 = isUtc ? File.GetLastAccessTimeUtc(path) : File.GetLastAccessTime(path);

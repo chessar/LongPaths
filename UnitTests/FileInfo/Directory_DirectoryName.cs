@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_Directory_DirectoryName() => FileInfoDirectoryDirectoryName(false);
+        public void FileInfo_Directory_DirectoryName() => FileInfoDirectoryDirectoryName(false, false);
 
         [TestMethod]
-        public void FileInfo_Directory_DirectoryName_UNC() => FileInfoDirectoryDirectoryName(true);
+        public void FileInfo_Directory_DirectoryName_UNC() => FileInfoDirectoryDirectoryName(false, true);
+
+        [TestMethod]
+        public void FileInfo_Directory_DirectoryNameWithSlash() => FileInfoDirectoryDirectoryName(true, false);
+
+        [TestMethod]
+        public void FileInfo_Directory_DirectoryNameWithSlash_UNC() => FileInfoDirectoryDirectoryName(true, true);
 
 
-        private static void FileInfoDirectoryDirectoryName(in bool asNetwork)
+        private static void FileInfoDirectoryDirectoryName(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var fi = new FileInfo(path);
             var di = fi.Directory;

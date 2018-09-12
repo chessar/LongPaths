@@ -117,6 +117,17 @@ namespace Chessar.UnitTests
 #endif
             ;
 
+        private static string AddDoubleSeparator(string path, in bool sepAtEnd)
+        {
+            var s = DirectorySeparatorChar;
+            var si = path.LastIndexOf(s);
+            if (si > 0)
+                path = $"{path.Substring(0, si)}{s}{path.Substring(si)}";
+            if (sepAtEnd)
+                path += s;
+            return path;
+        }
+
         internal static (string, string) CreateLongTempFolder(in bool skipCreate = false, in bool asNetwork = false, in bool withSlash = false)
         {
             var path = RandomLongFolder;
@@ -125,13 +136,13 @@ namespace Chessar.UnitTests
                 Directory.CreateDirectory(pathWithPrefix);
             if (asNetwork)
                 path = path.ToNetworkPath();
-            path = path.TrimEnd(trimEndChars);
-            pathWithPrefix = pathWithPrefix.TrimEnd(trimEndChars);
+
             if (withSlash)
             {
-                path += DirectorySeparatorChar;
-                pathWithPrefix += DirectorySeparatorChar;
+                path = AddDoubleSeparator(path, true);
+                pathWithPrefix = AddDoubleSeparator(pathWithPrefix, true);
             }
+
             return (path, asNetwork ? path
 #if NET462
                 .AddLongPathPrefix()
@@ -139,7 +150,7 @@ namespace Chessar.UnitTests
             : pathWithPrefix);
         }
 
-        internal static (string, string) CreateLongTempFile(in bool skipCreate = false, in bool asNetwork = false)
+        internal static (string, string) CreateLongTempFile(in bool skipCreate = false, in bool asNetwork = false, in bool withSlash = false)
         {
             var path = RandomLongTxtFile;
             var pathWithPrefix = path.WithPrefix();
@@ -148,6 +159,13 @@ namespace Chessar.UnitTests
                 File.CreateText(pathWithPrefix).Dispose();
             if (asNetwork)
                 path = path.ToNetworkPath();
+
+            if (withSlash)
+            {
+                path = AddDoubleSeparator(path, false);
+                pathWithPrefix = AddDoubleSeparator(pathWithPrefix, false);
+            }
+
             return (path, asNetwork ? path
 #if NET462
                     .AddLongPathPrefix()

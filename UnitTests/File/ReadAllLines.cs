@@ -9,15 +9,21 @@ namespace Chessar.UnitTests
     partial class FileTests
     {
         [TestMethod]
-        public void File_ReadAllLines() => FileReadAllLines(false);
+        public void File_ReadAllLines() => FileReadAllLines(false, false);
 
         [TestMethod]
-        public void File_ReadAllLines_UNC() => FileReadAllLines(true);
+        public void File_ReadAllLines_UNC() => FileReadAllLines(false, true);
+
+        [TestMethod]
+        public void File_ReadAllLinesWithSlash() => FileReadAllLines(true, false);
+
+        [TestMethod]
+        public void File_ReadAllLinesWithSlash_UNC() => FileReadAllLines(true, true);
 
 
-        private static void FileReadAllLines(in bool asNetwork)
+        private static void FileReadAllLines(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             string[] lines = { TenFileContent };
 

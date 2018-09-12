@@ -9,21 +9,33 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_Time() => FileInfoTime(false, false);
+        public void FileInfo_Time() => FileInfoTime(false, false, false);
 
         [TestMethod]
-        public void FileInfo_Time_UNC() => FileInfoTime(false, true);
+        public void FileInfo_Time_UNC() => FileInfoTime(false, false, true);
 
         [TestMethod]
-        public void FileInfo_TimeUtc() => FileInfoTime(true, false);
+        public void FileInfo_TimeUtc() => FileInfoTime(true, false, false);
 
         [TestMethod]
-        public void FileInfo_TimeUtc_UNC() => FileInfoTime(true, true);
+        public void FileInfo_TimeUtc_UNC() => FileInfoTime(true, false, true);
+
+        [TestMethod]
+        public void FileInfo_TimeWithSlash() => FileInfoTime(false, true, false);
+
+        [TestMethod]
+        public void FileInfo_TimeWithSlash_UNC() => FileInfoTime(false, true, true);
+
+        [TestMethod]
+        public void FileInfo_TimeUtcWithSlash() => FileInfoTime(true, true, false);
+
+        [TestMethod]
+        public void FileInfo_TimeUtcWithSlash_UNC() => FileInfoTime(true, true, true);
 
 
-        private static void FileInfoTime(in bool isUtc, in bool asNetwork)
+        private static void FileInfoTime(in bool isUtc, in bool withSlash, in bool asNetwork)
         {
-            var (path, _) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, _) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var fi = new FileInfo(path);
 

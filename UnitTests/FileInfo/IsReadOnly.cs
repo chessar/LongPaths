@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_IsReadOnly() => FileInfoIsReadOnly(false);
+        public void FileInfo_IsReadOnly() => FileInfoIsReadOnly(false, false);
 
         [TestMethod]
-        public void FileInfo_IsReadOnly_UNC() => FileInfoIsReadOnly(true);
+        public void FileInfo_IsReadOnly_UNC() => FileInfoIsReadOnly(false, true);
+
+        [TestMethod]
+        public void FileInfo_IsReadOnlyWithSlash() => FileInfoIsReadOnly(true, false);
+
+        [TestMethod]
+        public void FileInfo_IsReadOnlyWithSlash_UNC() => FileInfoIsReadOnly(true, true);
 
 
-        private static void FileInfoIsReadOnly(in bool asNetwork)
+        private static void FileInfoIsReadOnly(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var fi = new FileInfo(path);
 

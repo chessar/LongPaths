@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_Length() => FileInfoLength(false);
+        public void FileInfo_Length() => FileInfoLength(false, false);
 
         [TestMethod]
-        public void FileInfo_Length_UNC() => FileInfoLength(true);
+        public void FileInfo_Length_UNC() => FileInfoLength(false, true);
+
+        [TestMethod]
+        public void FileInfo_LengthWithSlash() => FileInfoLength(true, false);
+
+        [TestMethod]
+        public void FileInfo_LengthWithSlash_UNC() => FileInfoLength(true, true);
 
 
-        private static void FileInfoLength(in bool asNetwork)
+        private static void FileInfoLength(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
             File.WriteAllText(pathWithPrefix, TenFileContent, Utf8WithoutBom);
 
             var fi = new FileInfo(path);

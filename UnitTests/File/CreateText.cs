@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileTests
     {
         [TestMethod]
-        public void File_CreateText() => FileCreateText(false);
+        public void File_CreateText() => FileCreateText(false, false);
 
         [TestMethod]
-        public void File_CreateText_UNC() => FileCreateText(true);
+        public void File_CreateText_UNC() => FileCreateText(false, true);
+
+        [TestMethod]
+        public void File_CreateTextWithSlash() => FileCreateText(true, false);
+
+        [TestMethod]
+        public void File_CreateTextWithSlash_UNC() => FileCreateText(true, true);
 
 
-        private static void FileCreateText(in bool asNetwork)
+        private static void FileCreateText(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork, in withSlash);
 
             using (var sw = File.CreateText(path))
                 sw.Write(TenFileContent);

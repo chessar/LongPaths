@@ -8,16 +8,22 @@ namespace Chessar.UnitTests
     partial class FileTests
     {
         [TestMethod]
-        public void File_Replace() => FileReplace(false);
+        public void File_Replace() => FileReplace(false, false);
 
         [TestMethod]
-        public void File_Replace_UNC() => FileReplace(true);
+        public void File_Replace_UNC() => FileReplace(false, true);
+
+        [TestMethod]
+        public void File_ReplaceWithSlash() => FileReplace(true, false);
+
+        [TestMethod]
+        public void File_ReplaceWithSlash_UNC() => FileReplace(true, true);
 
 
-        private static void FileReplace(in bool asNetwork)
+        private static void FileReplace(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
-            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
+            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             IsTrue(File.Exists(pathNewWithPrefix));
             var fi = new FileInfo(pathNewWithPrefix);

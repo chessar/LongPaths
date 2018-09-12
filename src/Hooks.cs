@@ -12,11 +12,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Hosting;
 using static Chessar.HookManager;
 using NormalizePathFunc = System.Func<string, bool, int, bool, string>;
 using StringToStringFunc = System.Func<string, string>; // AddLongPathPrefix, RemoveLongPathPrefix
+
 namespace Chessar
 {
     /// <summary>
@@ -24,6 +26,12 @@ namespace Chessar
     /// </summary>
     public static partial class Hooks
     {
+        #region Consts
+
+        private const int devicePrefixLength = 4;
+
+        #endregion
+
         #region Fields
 
         private static readonly BindingFlags
@@ -36,6 +44,8 @@ namespace Chessar
             tInt = typeof(int),
             tHttpResponse = typeof(HttpResponse),
             tUri = typeof(Uri);
+        private static readonly string dirSep = Path.DirectorySeparatorChar.ToString();
+        private static readonly Regex multiSeps = new Regex(@"[\\|/]{2,}", RegexOptions.Compiled);
 
         #region Lazy Delegates
 
@@ -190,7 +200,10 @@ namespace Chessar
 
             // fix for extend path with long prefix
             if (fullCheck && short.MaxValue == maxPathLength)
-                return AddLongPathPrefix(normalizedPath);
+                normalizedPath = AddLongPathPrefix(normalizedPath);
+
+            if (IsExtended(normalizedPath))
+                normalizedPath = RemoveDoubleSeparators(normalizedPath);
 
             return normalizedPath;
         }
@@ -238,7 +251,7 @@ namespace Chessar
             out IntPtr dacl,
             out IntPtr sacl,
             out IntPtr securityDescriptor) => NativeMethods.GetSecurityInfoByName(
-                AddLongPathPrefix(name),
+                WithPrefixWoDblSeps(name),
                 objectType,
                 securityInformation,
                 out sidOwner,
@@ -249,7 +262,7 @@ namespace Chessar
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static bool MoveFilePatched(string src, string dst)
-            => NativeMethods.MoveFile(AddLongPathPrefix(src), AddLongPathPrefix(dst));
+            => NativeMethods.MoveFile(WithPrefixWoDblSeps(src), WithPrefixWoDblSeps(dst));
 
         [Pure, MethodImpl(MethodImplOptions.NoInlining)]
         private static string GetNormalizedFilenamePatched(HttpResponse response, string fn)
@@ -267,7 +280,7 @@ namespace Chessar
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static int GdipSaveImageToFilePatched(HandleRef image, string filename,
             ref Guid classId, HandleRef encoderParams) => NativeMethods.GdipSaveImageToFile(
-                image, AddLongPathPrefix(filename), ref classId, encoderParams);
+                image, WithPrefixWoDblSeps(filename), ref classId, encoderParams);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void CreateThisPatched(Uri thisUri, string uri, bool dontEscape, UriKind uriKind)
@@ -296,6 +309,24 @@ namespace Chessar
         #endregion
 
         #region Utils
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string RemoveDoubleSeparators(string path)
+            => multiSeps.Replace(path, dirSep, -1, 2);
+
+        // See https://referencesource.microsoft.com/#mscorlib/system/io/pathinternal.cs,251
+        // While paths like "//?/C:/" will work, they're treated the same as "\\.\" paths.
+        // Skipping of normalization will *only* occur if back slashes ('\') are used.
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool IsExtended(string path) => path.Length >= devicePrefixLength
+            && IsDirectorySeparatorChar(path[0])
+            && (IsDirectorySeparatorChar(path[1]) || path[1] == '?')
+            && path[2] == '?'
+            && IsDirectorySeparatorChar(path[3]);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string WithPrefixWoDblSeps(this string path)
+            => RemoveDoubleSeparators(AddLongPathPrefix(path));
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Tuple<StackTrace, Type, string, bool> GetStackTrace(in int skipFrames)

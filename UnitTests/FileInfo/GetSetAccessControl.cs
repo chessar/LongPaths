@@ -11,15 +11,21 @@ namespace Chessar.UnitTests
     partial class FileInfoTests
     {
         [TestMethod]
-        public void FileInfo_GetSetAccessControl() => FileInfoGetSetAccessControl(false);
+        public void FileInfo_GetSetAccessControl() => FileInfoGetSetAccessControl(false, false);
 
         [TestMethod]
-        public void FileInfo_GetSetAccessControl_UNC() => FileInfoGetSetAccessControl(true);
+        public void FileInfo_GetSetAccessControl_UNC() => FileInfoGetSetAccessControl(false, true);
+
+        [TestMethod]
+        public void FileInfo_GetSetAccessControlWithSlash() => FileInfoGetSetAccessControl(true, false);
+
+        [TestMethod]
+        public void FileInfo_GetSetAccessControlWithSlash_UNC() => FileInfoGetSetAccessControl(true, true);
 
 
-        private static void FileInfoGetSetAccessControl(in bool asNetwork)
+        private static void FileInfoGetSetAccessControl(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var fi = new FileInfo(path);
 

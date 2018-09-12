@@ -8,15 +8,21 @@ namespace Chessar.UnitTests
     partial class FileTests
     {
         [TestMethod]
-        public void File_AppendReadAllText() => FileAppendReadAllText(false);
+        public void File_AppendReadAllText() => FileAppendReadAllText(false, false);
 
         [TestMethod]
-        public void File_AppendReadAllText_UNC() => FileAppendReadAllText(true);
+        public void File_AppendReadAllText_UNC() => FileAppendReadAllText(false, true);
+
+        [TestMethod]
+        public void File_AppendReadAllTextWithSlash() => FileAppendReadAllText(true, false);
+
+        [TestMethod]
+        public void File_AppendReadAllTextWithSlash_UNC() => FileAppendReadAllText(true, true);
 
 
-        private static void FileAppendReadAllText(in bool asNetwork)
+        private static void FileAppendReadAllText(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFile(true, in asNetwork, in withSlash);
 
             File.AppendAllText(path, TenFileContent, Utf8WithoutBom);
 
