@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/nuget/v/Chessar.LongPaths.svg)](https://www.nuget.org/packages/Chessar.LongPaths)
 [![Downloads](https://img.shields.io/nuget/dt/Chessar.LongPaths.svg)](https://www.nuget.org/packages/Chessar.LongPaths)
-[![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)
+[![License](https://img.shields.io/:license-mit-blue.svg)](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)
 ![Platforms](https://img.shields.io/badge/platform-windows-lightgray.svg)
 ![Language](https://img.shields.io/badge/language-c%23-orange.svg)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-yellow.svg)
