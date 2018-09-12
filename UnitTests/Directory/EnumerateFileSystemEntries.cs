@@ -9,19 +9,31 @@ namespace Chessar.UnitTests
     partial class DirectoryTests
     {
         [TestMethod]
-        public void Directory_EnumerateFileSystemEntriesAll() => DirectoryEnumerateFs(false, false);
+        public void Directory_EnumerateFileSystemEntriesAll() => DirectoryEnumerateFs(false, false, false);
 
         [TestMethod]
-        public void Directory_EnumerateFileSystemEntriesAll_UNC() => DirectoryEnumerateFs(false, true);
+        public void Directory_EnumerateFileSystemEntriesAll_UNC() => DirectoryEnumerateFs(false, false, true);
 
         [TestMethod]
-        public void Directory_EnumerateFileSystemEntriesWithPattern() => DirectoryEnumerateFs(true, false);
+        public void Directory_EnumerateFileSystemEntriesWithPattern() => DirectoryEnumerateFs(true, false, false);
 
         [TestMethod]
-        public void Directory_EnumerateFileSystemEntriesWithPattern_UNC() => DirectoryEnumerateFs(true, true);
+        public void Directory_EnumerateFileSystemEntriesWithPattern_UNC() => DirectoryEnumerateFs(true, false, true);
+
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesAllWithSlash() => DirectoryEnumerateFs(false, true, false);
+
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesAllWithSlash_UNC() => DirectoryEnumerateFs(false, true, true);
+
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesWithPatternWithSlash() => DirectoryEnumerateFs(true, true, false);
+
+        [TestMethod]
+        public void Directory_EnumerateFileSystemEntriesWithPatternWithSlash_UNC() => DirectoryEnumerateFs(true, true, true);
 
 
-        private static void DirectoryEnumerateFs(in bool withPattern, in bool asNetwork)
+        private static void DirectoryEnumerateFs(in bool withPattern, in bool withSlash, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
@@ -31,6 +43,9 @@ namespace Chessar.UnitTests
                     Directory.CreateDirectory($"{pathWithPrefix}{s}{c}");
                 else
                     File.CreateText($"{pathWithPrefix}{s}{c}").Close();
+
+            if (withSlash)
+                path += s;
 
             var names = new StringBuilder();
 

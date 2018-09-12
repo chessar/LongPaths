@@ -34,16 +34,12 @@ namespace Chessar.UnitTests
 
         private static void DirectoryDelete(in bool recursive, in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
-
-            path = path.TrimEnd(' ', '/', '\\');
-            if (withSlash)
-                path += Path.DirectorySeparatorChar;
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork, withSlash: in withSlash);
 
             if (recursive)
             {
                 Directory.CreateDirectory(Path.Combine(pathWithPrefix, "subfolder"));
-                File.CreateText($"{pathWithPrefix}{Path.DirectorySeparatorChar}file.txt").Close();
+                File.CreateText($"{pathWithPrefix.TrimEnd(trimEndChars)}{Path.DirectorySeparatorChar}file.txt").Close();
             }
 
             if (recursive)

@@ -34,11 +34,7 @@ namespace Chessar.UnitTests
 
         private static void DirectoryInfoDelete(in bool recursive, in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
-
-            path = path.TrimEnd(' ', '/', '\\');
-            if (withSlash)
-                path += Path.DirectorySeparatorChar;
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork, withSlash: in withSlash);
 
             if (recursive)
             {

@@ -9,25 +9,40 @@ namespace Chessar.UnitTests
     partial class DirectoryTests
     {
         [TestMethod]
-        public void Directory_EnumerateFilesAll() => DirectoryEnumerateFiles(false, false);
+        public void Directory_EnumerateFilesAll() => DirectoryEnumerateFiles(false, false, false);
 
         [TestMethod]
-        public void Directory_EnumerateFilesAll_UNC() => DirectoryEnumerateFiles(false, true);
+        public void Directory_EnumerateFilesAll_UNC() => DirectoryEnumerateFiles(false, false, true);
 
         [TestMethod]
-        public void Directory_EnumerateFilesWithPattern() => DirectoryEnumerateFiles(true, false);
+        public void Directory_EnumerateFilesWithPattern() => DirectoryEnumerateFiles(true, false, false);
 
         [TestMethod]
-        public void Directory_EnumerateFilesWithPattern_UNC() => DirectoryEnumerateFiles(true, true);
+        public void Directory_EnumerateFilesWithPattern_UNC() => DirectoryEnumerateFiles(true, false, true);
+
+        [TestMethod]
+        public void Directory_EnumerateFilesAllWithSlash() => DirectoryEnumerateFiles(false, true, false);
+
+        [TestMethod]
+        public void Directory_EnumerateFilesAllWithSlash_UNC() => DirectoryEnumerateFiles(false, true, true);
+
+        [TestMethod]
+        public void Directory_EnumerateFilesWithPatternWithSlash() => DirectoryEnumerateFiles(true, true, false);
+
+        [TestMethod]
+        public void Directory_EnumerateFilesWithPatternWithSlash_UNC() => DirectoryEnumerateFiles(true, true, true);
 
 
-        private static void DirectoryEnumerateFiles(in bool withPattern, in bool asNetwork)
+        private static void DirectoryEnumerateFiles(in bool withPattern, in bool withSlash, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
             const string abc = "abc";
             foreach (var c in abc)
                 File.CreateText($"{pathWithPrefix}{s}{c}").Close();
+
+            if (withSlash)
+                path += s;
 
             var names = new StringBuilder();
 

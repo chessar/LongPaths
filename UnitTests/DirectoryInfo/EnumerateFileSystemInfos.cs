@@ -9,19 +9,31 @@ namespace Chessar.UnitTests
     partial class DirectoryInfoTests
     {
         [TestMethod]
-        public void DirectoryInfo_EnumerateFileSystemInfosAll() => DirectoryInfoEnumerateFs(false, false);
+        public void DirectoryInfo_EnumerateFileSystemInfosAll() => DirectoryInfoEnumerateFs(false, false, false);
 
         [TestMethod]
-        public void DirectoryInfo_EnumerateFileSystemInfosAll_UNC() => DirectoryInfoEnumerateFs(false, true);
+        public void DirectoryInfo_EnumerateFileSystemInfosAll_UNC() => DirectoryInfoEnumerateFs(false, false, true);
 
         [TestMethod]
-        public void DirectoryInfo_EnumerateFileSystemInfosWithPattern() => DirectoryInfoEnumerateFs(true, false);
+        public void DirectoryInfo_EnumerateFileSystemInfosWithPattern() => DirectoryInfoEnumerateFs(true, false, false);
 
         [TestMethod]
-        public void DirectoryInfo_EnumerateFileSystemInfosWithPattern_UNC() => DirectoryInfoEnumerateFs(true, true);
+        public void DirectoryInfo_EnumerateFileSystemInfosWithPattern_UNC() => DirectoryInfoEnumerateFs(true, false, true);
+
+        [TestMethod]
+        public void DirectoryInfo_EnumerateFileSystemInfosAllWithSlash() => DirectoryInfoEnumerateFs(false, true, false);
+
+        [TestMethod]
+        public void DirectoryInfo_EnumerateFileSystemInfosAllWithSlash_UNC() => DirectoryInfoEnumerateFs(false, true, true);
+
+        [TestMethod]
+        public void DirectoryInfo_EnumerateFileSystemInfosWithPatternWithSlash() => DirectoryInfoEnumerateFs(true, true, false);
+
+        [TestMethod]
+        public void DirectoryInfo_EnumerateFileSystemInfosWithPatternWithSlash_UNC() => DirectoryInfoEnumerateFs(true, true, true);
 
 
-        private static void DirectoryInfoEnumerateFs(in bool withPattern, in bool asNetwork)
+        private static void DirectoryInfoEnumerateFs(in bool withPattern, in bool withSlash, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
@@ -31,6 +43,9 @@ namespace Chessar.UnitTests
                     Directory.CreateDirectory($"{pathWithPrefix}{s}{c}");
                 else
                     File.CreateText($"{pathWithPrefix}{s}{c}").Close();
+
+            if (withSlash)
+                path += s;
 
             var di = new DirectoryInfo(path);
             var names = new StringBuilder();

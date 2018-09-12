@@ -23,8 +23,9 @@ namespace Chessar.UnitTests
 <Root>
   <Element attr=""aValue"">Value</Element>
 </Root>";
-        internal static readonly char[] prefixChars = { DirectorySeparatorChar, AltDirectorySeparatorChar,
-            '?', '.', ' ' };
+        internal static readonly char[]
+            prefixChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, '?', '.', ' ' },
+            trimEndChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, ' ' };
         internal static readonly UTF8Encoding
             Utf8WithoutBom = new UTF8Encoding(false);
 #if NET462
@@ -116,7 +117,7 @@ namespace Chessar.UnitTests
 #endif
             ;
 
-        internal static (string, string) CreateLongTempFolder(in bool skipCreate = false, in bool asNetwork = false)
+        internal static (string, string) CreateLongTempFolder(in bool skipCreate = false, in bool asNetwork = false, in bool withSlash = false)
         {
             var path = RandomLongFolder;
             var pathWithPrefix = path.WithPrefix();
@@ -124,6 +125,13 @@ namespace Chessar.UnitTests
                 Directory.CreateDirectory(pathWithPrefix);
             if (asNetwork)
                 path = path.ToNetworkPath();
+            path = path.TrimEnd(trimEndChars);
+            pathWithPrefix = pathWithPrefix.TrimEnd(trimEndChars);
+            if (withSlash)
+            {
+                path += DirectorySeparatorChar;
+                pathWithPrefix += DirectorySeparatorChar;
+            }
             return (path, asNetwork ? path
 #if NET462
                 .AddLongPathPrefix()
