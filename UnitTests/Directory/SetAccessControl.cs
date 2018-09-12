@@ -11,15 +11,21 @@ namespace Chessar.UnitTests
     partial class DirectoryTests
     {
         [TestMethod]
-        public void Directory_SetAccessControl() => DirectorySetAccessControl(false);
+        public void Directory_SetAccessControl() => DirectorySetAccessControl(false, false);
 
         [TestMethod]
-        public void Directory_SetAccessControl_UNC() => DirectorySetAccessControl(true);
+        public void Directory_SetAccessControl_UNC() => DirectorySetAccessControl(false, true);
+
+        [TestMethod]
+        public void Directory_SetAccessControlWithSlash() => DirectorySetAccessControl(true, false);
+
+        [TestMethod]
+        public void Directory_SetAccessControlWithSlash_UNC() => DirectorySetAccessControl(true, true);
 
 
-        private static void DirectorySetAccessControl(in bool asNetwork)
+        private static void DirectorySetAccessControl(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var ds = new DirectorySecurity();
             ds.AddAccessRule(new FileSystemAccessRule(WindowsIdentity.GetCurrent().Name,

@@ -9,21 +9,33 @@ namespace Chessar.UnitTests
     partial class DirectoryTests
     {
         [TestMethod]
-        public void Directory_GetSetTime() => DirectoryGetSetTime(false, false);
+        public void Directory_GetSetTime() => DirectoryGetSetTime(false, false, false);
 
         [TestMethod]
-        public void Directory_GetSetTime_UNC() => DirectoryGetSetTime(false, true);
+        public void Directory_GetSetTime_UNC() => DirectoryGetSetTime(false, false, true);
 
         [TestMethod]
-        public void Directory_GetSetTimeUtc() => DirectoryGetSetTime(true, false);
+        public void Directory_GetSetTimeUtc() => DirectoryGetSetTime(true, false, false);
 
         [TestMethod]
-        public void Directory_GetSetTimeUtc_UNC() => DirectoryGetSetTime(true, true);
+        public void Directory_GetSetTimeUtc_UNC() => DirectoryGetSetTime(true, false, true);
+
+        [TestMethod]
+        public void Directory_GetSetTimeWithSlash() => DirectoryGetSetTime(false, true, false);
+
+        [TestMethod]
+        public void Directory_GetSetTimeWithSlash_UNC() => DirectoryGetSetTime(false, true, true);
+
+        [TestMethod]
+        public void Directory_GetSetTimeUtcWithSlash() => DirectoryGetSetTime(true, true, false);
+
+        [TestMethod]
+        public void Directory_GetSetTimeUtcWithSlash_UNC() => DirectoryGetSetTime(true, true, true);
 
 
-        private static void DirectoryGetSetTime(in bool isUtc, in bool asNetwork)
+        private static void DirectoryGetSetTime(in bool isUtc, in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var d1 = isUtc ? Directory.GetCreationTimeUtc(path) : Directory.GetCreationTime(path);
             var d2 = isUtc ? Directory.GetLastAccessTimeUtc(path) : Directory.GetLastAccessTime(path);

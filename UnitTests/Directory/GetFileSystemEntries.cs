@@ -9,13 +9,19 @@ namespace Chessar.UnitTests
     partial class DirectoryTests
     {
         [TestMethod]
-        public void Directory_GetFileSystemEntries() => DirectoryGetFs(false);
+        public void Directory_GetFileSystemEntries() => DirectoryGetFs(false, false);
 
         [TestMethod]
-        public void Directory_GetFileSystemEntries_UNC() => DirectoryGetFs(true);
+        public void Directory_GetFileSystemEntries_UNC() => DirectoryGetFs(false, true);
+
+        [TestMethod]
+        public void Directory_GetFileSystemEntriesWithSlash() => DirectoryGetFs(true, false);
+
+        [TestMethod]
+        public void Directory_GetFileSystemEntriesWithSlash_UNC() => DirectoryGetFs(true, true);
 
 
-        private static void DirectoryGetFs(in bool asNetwork)
+        private static void DirectoryGetFs(in bool withSlash, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
             var s = Path.DirectorySeparatorChar;
@@ -26,6 +32,9 @@ namespace Chessar.UnitTests
                     File.CreateText($"{pathWithPrefix}{s}{c}").Close();
             Directory.CreateDirectory($"{pathWithPrefix}{s}d");
             File.CreateText($"{pathWithPrefix}{s}d{s}ad").Close();
+
+            if (withSlash)
+                path += s;
 
             var names = new StringBuilder();
             foreach (var f in Directory.GetFileSystemEntries(path, "a*", SearchOption.AllDirectories))
