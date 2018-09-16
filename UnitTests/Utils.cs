@@ -25,7 +25,8 @@ namespace Chessar.UnitTests
 </Root>";
         internal static readonly char[]
             prefixChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, '?', '.', ' ' },
-            trimEndChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, ' ' };
+            trimEndChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, ' ' },
+            seps = { DirectorySeparatorChar, AltDirectorySeparatorChar };
         internal static readonly UTF8Encoding
             Utf8WithoutBom = new UTF8Encoding(false);
 #if NET462
@@ -119,12 +120,18 @@ namespace Chessar.UnitTests
 
         private static string AddDoubleSeparator(string path, in bool sepAtEnd)
         {
-            var s = DirectorySeparatorChar;
-            var si = path.LastIndexOf(s);
+            var si = path.LastIndexOfAny(seps);
             if (si > 0)
-                path = $"{path.Substring(0, si)}{s}{path.Substring(si)}";
+            {
+                var before = path.Substring(0, si);
+                var after = path.Substring(si);
+                si = before.LastIndexOfAny(seps);
+                if (si > 0)
+                    before = $"{before.Substring(0, si)}{seps[1]}{seps[1]}{before.Substring(si + 1)}";
+                path = $"{before}{seps[0]}{after}";
+            }
             if (sepAtEnd)
-                path += s;
+                path += seps[0];
             return path;
         }
 
@@ -133,7 +140,7 @@ namespace Chessar.UnitTests
             var path = RandomLongFolder;
             var pathWithPrefix = path.WithPrefix();
             if (!skipCreate)
-                Directory.CreateDirectory(pathWithPrefix);
+                Directory.CreateDirectory(pathWithPrefix.Replace(seps[1], seps[0]));
             if (asNetwork)
                 path = path.ToNetworkPath();
 
@@ -154,9 +161,9 @@ namespace Chessar.UnitTests
         {
             var path = RandomLongTxtFile;
             var pathWithPrefix = path.WithPrefix();
-            Directory.CreateDirectory(GetDirectoryName(pathWithPrefix));
+            Directory.CreateDirectory(GetDirectoryName(pathWithPrefix.Replace(seps[1], seps[0])));
             if (!skipCreate)
-                File.CreateText(pathWithPrefix).Dispose();
+                File.CreateText(pathWithPrefix.Replace(seps[1], seps[0])).Dispose();
             if (asNetwork)
                 path = path.ToNetworkPath();
 

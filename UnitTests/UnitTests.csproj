@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462;netcoreapp2.1;</TargetFrameworks>
+    <TargetFrameworks>net462;netcoreapp2.1</TargetFrameworks>
     <AssemblyName>UnitTests</AssemblyName>
     <RootNamespace>Chessar.$(UnitTests)</RootNamespace>
     <IsCodedUITest>False</IsCodedUITest>

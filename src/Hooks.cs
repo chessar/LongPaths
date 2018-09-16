@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text.RegularExpressions;
+using System.Text;
 using System.Web;
 using System.Web.Hosting;
 using static Chessar.HookManager;
@@ -44,8 +44,6 @@ namespace Chessar
             tInt = typeof(int),
             tHttpResponse = typeof(HttpResponse),
             tUri = typeof(Uri);
-        private static readonly string dirSep = Path.DirectorySeparatorChar.ToString();
-        private static readonly Regex multiSeps = new Regex(@"[\\|/]{2,}", RegexOptions.Compiled);
 
         #region Lazy Delegates
 
@@ -203,7 +201,7 @@ namespace Chessar
                 normalizedPath = AddLongPathPrefix(normalizedPath);
 
             if (IsExtended(normalizedPath))
-                normalizedPath = RemoveDoubleSeparators(normalizedPath);
+                normalizedPath = FixPathSeparators(normalizedPath);
 
             return normalizedPath;
         }
@@ -311,8 +309,48 @@ namespace Chessar
         #region Utils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string RemoveDoubleSeparators(string path)
-            => multiSeps.Replace(path, dirSep, -1, 2);
+        internal static string FixPathSeparators(string path)
+        {
+            var sb = new StringBuilder();
+            sb.Append(path[0]).Append(path[1]);
+            var len = path.Length;
+            char ch;
+            var prevIsSep = false;
+            var buf = new StringBuilder();
+            for (int i = 2; i < len; ++i)
+            {
+                ch = path[i];
+                var curIsSep = ch == '/' || ch == '\\';
+                if (curIsSep)
+                {
+                    if (prevIsSep && buf.Length > 0)
+                        buf.Clear();
+                    prevIsSep = curIsSep;
+                }
+                else if (char.IsWhiteSpace(ch))
+                {
+                    if (prevIsSep)
+                        buf.Append(ch);
+                    else
+                        sb.Append(ch);
+                }
+                else
+                {
+                    if (prevIsSep)
+                    {
+                        sb.Append(Path.DirectorySeparatorChar);
+                        prevIsSep = false;
+                    }
+                    if (buf.Length > 0)
+                    {
+                        sb.Append(buf.ToString());
+                        buf.Clear();
+                    }
+                    sb.Append(ch);
+                }
+            }
+            return sb.ToString();
+        }
 
         // See https://referencesource.microsoft.com/#mscorlib/system/io/pathinternal.cs,251
         // While paths like "//?/C:/" will work, they're treated the same as "\\.\" paths.
@@ -326,7 +364,7 @@ namespace Chessar
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string WithPrefixWoDblSeps(this string path)
-            => RemoveDoubleSeparators(AddLongPathPrefix(path));
+            => FixPathSeparators(AddLongPathPrefix(path));
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Tuple<StackTrace, Type, string, bool> GetStackTrace(in int skipFrames)

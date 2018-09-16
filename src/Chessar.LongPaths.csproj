@@ -39,12 +39,12 @@
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.1.1</VersionPrefix>
+    <VersionPrefix>1.1.2</VersionPrefix>
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Fixed behavior with paths containing double path separators</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed behavior with paths containing alternate path separators</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GithubContentUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/</GithubContentUrl>
     <PackageLicenseUrl>$(GithubContentUrl)LICENSE.md</PackageLicenseUrl>
@@ -52,7 +52,7 @@
     <PackageProjectUrl>https://github.com/chessar/LongPaths</PackageProjectUrl>
     <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>\\?\ long path jmp hook</PackageTags>
+    <PackageTags>\\?\ long path jmp hook \\?\UNC\</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
     <IncludeDocumentationProjectOutputGroup>true</IncludeDocumentationProjectOutputGroup>
     <IncludeDebugSymbolsProjectOutputGroup>true</IncludeDebugSymbolsProjectOutputGroup>

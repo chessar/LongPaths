@@ -24,8 +24,8 @@ namespace Chessar.UnitTests
         {
             var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork, withSlash: in withSlash);
 
-            var root1 = new DirectoryInfo(path).Root?.FullName;
-            var root2 = Directory.GetDirectoryRoot(pathWithPrefix);
+            var root1 = new DirectoryInfo(path).Root?.FullName?.TrimEnd(seps);
+            var root2 = Directory.GetDirectoryRoot(pathWithPrefix).TrimEnd(seps);
 
             AreEqual(root1, root2);
         }
