@@ -29,6 +29,9 @@ namespace Chessar
         #region Consts
 
         private const int devicePrefixLength = 4;
+        private const string
+            testString = @"\\?\c:/\d",
+            testResultString = @"\\?\c:\d";
 
         #endregion
 
@@ -108,6 +111,10 @@ namespace Chessar
         /// Patched method adding long path prefix <see langword="\\?\"/>
         /// (or <see langword="\\?\UNC\"/> for network shares) if needed.
         /// </summary>
+        /// <returns>
+        /// <see cref="PatchLongPathsResult.Success"/> if patch successfully applied,
+        /// otherwise <see cref="PatchLongPathsResult.AlreadyPatched"/>.
+        /// </returns>
         /// <exception cref="ArgumentNullException">
         /// If no methods are found for the patches.
         /// </exception>
@@ -117,8 +124,11 @@ namespace Chessar
         /// <exception cref="Win32Exception">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
-        public static void PatchLongPaths()
+        public static PatchLongPathsResult PatchLongPaths()
         {
+            if (NoPatchRequired())
+                return PatchLongPathsResult.AlreadyPatched;
+
             MethodInfo[] methods = null;
             try
             {
@@ -136,6 +146,8 @@ namespace Chessar
                 BatchUnhook(methods);
                 throw;
             }
+
+            return default;
         }
 
         /// <summary>
@@ -307,6 +319,9 @@ namespace Chessar
         #endregion
 
         #region Utils
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+        private static bool NoPatchRequired() => testResultString == Path.GetFullPath(testString); //-V3039
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string FixPathSeparators(string path)

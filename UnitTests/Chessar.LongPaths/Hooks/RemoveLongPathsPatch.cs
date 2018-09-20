@@ -10,7 +10,7 @@ namespace Chessar.UnitTests.Hooks
 {
     partial class HooksTests
     {
-        [TestMethod, ExpectedException(typeof(AggregateException))]
+        [TestMethod, ExpectedException(typeof(ArgumentException))]
         public void RemoveLongPathsPatch_MissingMethod()
         {
             try
