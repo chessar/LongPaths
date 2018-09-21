@@ -3,7 +3,7 @@
 namespace Chessar
 {
     /// <summary>
-    /// The result of applying the patch to support long paths
+    /// The result of applying the patch to support long paths.
     /// </summary>
     public enum PatchLongPathsResult
     {

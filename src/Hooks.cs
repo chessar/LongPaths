@@ -42,6 +42,7 @@ namespace Chessar
             privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
         private static readonly Type
             tPath = typeof(Path),
+            tFile = typeof(File),
             tString = typeof(string),
             tBool = typeof(bool),
             tInt = typeof(int),
@@ -459,7 +460,10 @@ namespace Chessar
                     t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (
 
                     // Path
-                    t == tPath && fn != null && fn.StartsWith("System.Web.", StringComparison.Ordinal))
+                    needRemoveLongPrefix = (t == tPath || t == tFile) && fn != null && (
+                        fn.StartsWith("System.Web.", StringComparison.Ordinal) ||
+                        fn.StartsWith("System.Configuration.", StringComparison.Ordinal) ||
+                        fn.StartsWith("System.Security.Cryptography.", StringComparison.Ordinal)))
                 );
         }
 
