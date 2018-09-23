@@ -75,15 +75,8 @@ See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 Next methods does not work for long paths, even if a prefix is added:
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
 
-# Known Issues
-If there are two or more ASP.NET Applications configured on the same Application Pool in IIS,
-then starting one of them after the other falls with the error
-```csharp
-System.InvalidOperationException: The configuration system has already been initialized.
-```
-
 # TODO
-1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes) and fix [`known issues`](https://github.com/chessar/LongPaths#known-issues).
+1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
 2. Make hooks more thread safe.
 
 # License
