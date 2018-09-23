@@ -27,6 +27,20 @@ namespace Chessar.UnitTests.Hooks
                 PatchLongPaths();
             }
         }
+
+        [TestMethod]
+        public void RemoveLongPathsPatch_NoPatch()
+        {
+            try
+            {
+                RemoveLongPathsPatch();
+                RemoveLongPathsPatch();
+            }
+            finally
+            {
+                PatchLongPaths();
+            }
+        }
     }
 }
 #endif

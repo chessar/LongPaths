@@ -58,7 +58,9 @@ namespace Chessar
             addLongPathPrefix = new Lazy<StringToStringFunc>(() => ToDelegate<StringToStringFunc>(
                 tPath, "AddLongPathPrefix", privateStatic, tString)),
             removeLongPathPrefix = new Lazy<StringToStringFunc>(() => ToDelegate<StringToStringFunc>(
-                tPath, "RemoveLongPathPrefix", privateStatic, tString));
+                tPath, "RemoveLongPathPrefix", privateStatic, tString)),
+            getFullPathInternal = new Lazy<StringToStringFunc>(() => ToDelegate<StringToStringFunc>(
+                tPath, "GetFullPathInternal", privateStatic, tString));
         private static readonly Lazy<LongPathDirectoryDeleteHelper>
             longPathDirectoryDeleteHelper = new Lazy<LongPathDirectoryDeleteHelper>(() => ToDelegate<LongPathDirectoryDeleteHelper>(
                 Type.GetType("System.IO.LongPathDirectory"), "DeleteHelper", privateStatic, tString, tString, tBool, tBool));
@@ -73,7 +75,7 @@ namespace Chessar
         private static readonly Lazy<MethodInfo[]> originals = new Lazy<MethodInfo[]>(() => new MethodInfo[]
         {
             GetMethod(tPath, "NormalizePath", privateStatic, tString, tBool, tInt),
-            GetMethod(tPath, "GetFullPathInternal", privateStatic),
+            getFullPathInternal.Value.Method,
             GetMethod(typeof(Directory), "Delete", privateStatic, tString, tString, tBool, tBool),
             GetMethod(win32NativeType.Value, "MoveFile", privateStatic),
             GetMethod(win32NativeType.Value, "GetSecurityInfoByName", privateStatic),
@@ -112,10 +114,6 @@ namespace Chessar
         /// Patched method adding long path prefix <see langword="\\?\"/>
         /// (or <see langword="\\?\UNC\"/> for network shares) if needed.
         /// </summary>
-        /// <returns>
-        /// <see cref="PatchLongPathsResult.Success"/> if patch successfully applied,
-        /// otherwise <see cref="PatchLongPathsResult.AlreadyPatched"/>.
-        /// </returns>
         /// <exception cref="ArgumentNullException">
         /// If no methods are found for the patches.
         /// </exception>
@@ -125,10 +123,10 @@ namespace Chessar
         /// <exception cref="Win32Exception">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
-        public static PatchLongPathsResult PatchLongPaths()
+        public static void PatchLongPaths()
         {
             if (NoPatchRequired())
-                return PatchLongPathsResult.AlreadyPatched;
+                return;
 
             MethodInfo[] methods = null;
             try
@@ -147,18 +145,21 @@ namespace Chessar
                 BatchUnhook(methods);
                 throw;
             }
-
-            return default;
         }
 
         /// <summary>
         /// Remove long path support patches.
         /// </summary>
+        /// <exception cref="ArgumentException">
+        /// If only one method from the list was not patched earlier.
+        /// </exception>
         /// <exception cref="AggregateException">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
         public static void RemoveLongPathsPatch()
         {
+            if (!NoPatchRequired())
+                return;
             var errors = BatchUnhook(originals.Value);
             if (errors != null)
                 throw errors;
@@ -321,8 +322,15 @@ namespace Chessar
 
         #region Utils
 
+        /// <summary>
+        /// Checking whether a patch is required to support long paths.
+        /// </summary>
+        /// <returns>
+        /// <see langword="True" /> if the patch is not required (already applied),
+        /// otherwise - <see langword="false" />.
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-        private static bool NoPatchRequired() => testResultString == Path.GetFullPath(testString); //-V3039
+        public static bool NoPatchRequired() => testResultString == getFullPathInternal.Value(testString); //-V3039
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string FixPathSeparators(string path)
@@ -460,10 +468,7 @@ namespace Chessar
                     t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (
 
                     // Path
-                    needRemoveLongPrefix = (t == tPath || t == tFile) && fn != null && (
-                        fn.StartsWith("System.Web.", StringComparison.Ordinal) ||
-                        fn.StartsWith("System.Configuration.", StringComparison.Ordinal) ||
-                        fn.StartsWith("System.Security.Cryptography.", StringComparison.Ordinal)))
+                    (t == tPath || t == tFile) && fn != null && fn.StartsWith("System.Web.", StringComparison.Ordinal))
                 );
         }
 
@@ -472,7 +477,15 @@ namespace Chessar
         {
             if (ct?.IsSubclassOf(typeof(TraceListener)) ?? false)
                 return;
-            Trace.TraceInformation("[GetFullPathInternal Patched = {0}]:\r\n{1}", patched, st?.ToString() ?? "<no StackTrace>");
+
+            var sts = st?.ToString() ?? "<no StackTrace>";
+            if (sts.IndexOf("System.Web.Hosting.HostingEnvironment.Initialize", StringComparison.Ordinal) > 0 ||
+                sts.IndexOf("System.Diagnostics.TraceInternal.", StringComparison.Ordinal) > 0)
+                return;
+
+            var ad = AppDomain.CurrentDomain;
+            Trace.TraceInformation("{0}[GetFullPathInternal Patched = {1}]:{0}AppDomain = {2} ({3}){0}StackTrace:{0}{4}{0}",
+                Environment.NewLine, patched, ad.Id, ad.FriendlyName, sts);
             Trace.Flush();
         }
 
