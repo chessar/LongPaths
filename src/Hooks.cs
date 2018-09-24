@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -123,6 +124,7 @@ namespace Chessar
         /// <exception cref="Win32Exception">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
+        [HandleProcessCorruptedStateExceptions]
         public static void PatchLongPaths()
         {
             if (NoPatchRequired())
@@ -154,8 +156,10 @@ namespace Chessar
         /// If only one method from the list was not patched earlier.
         /// </exception>
         /// <exception cref="AggregateException">
-        /// If a native call fails. This is unrecoverable.
+        /// If more one methods from the list was not patched earlier,
+        /// or if a native call fails (this is unrecoverable).
         /// </exception>
+        [HandleProcessCorruptedStateExceptions]
         public static void RemoveLongPathsPatch()
         {
             if (!NoPatchRequired())
@@ -254,6 +258,7 @@ namespace Chessar
             => longPathDirectoryDeleteHelper.Value(fullPath, userPath, recursive, true);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [HandleProcessCorruptedStateExceptions]
         private static uint GetSecurityInfoByNamePatched(
             string name,
             uint objectType,
@@ -273,6 +278,7 @@ namespace Chessar
                 out securityDescriptor);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [HandleProcessCorruptedStateExceptions]
         private static bool MoveFilePatched(string src, string dst)
             => NativeMethods.MoveFile(WithPrefixWoDblSeps(src), WithPrefixWoDblSeps(dst));
 
@@ -290,6 +296,7 @@ namespace Chessar
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [HandleProcessCorruptedStateExceptions]
         private static int GdipSaveImageToFilePatched(HandleRef image, string filename,
             ref Guid classId, HandleRef encoderParams) => NativeMethods.GdipSaveImageToFile(
                 image, WithPrefixWoDblSeps(filename), ref classId, encoderParams);
@@ -512,6 +519,7 @@ namespace Chessar
                 ExactSpelling = true,
                 CharSet = CharSet.Unicode)]
             [ResourceExposure(ResourceScope.None)]
+            [HandleProcessCorruptedStateExceptions]
             internal static extern uint GetSecurityInfoByName(
                string name,
                uint objectType,
@@ -525,10 +533,12 @@ namespace Chessar
             [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto, BestFitMapping = false)]
             [return: MarshalAs(UnmanagedType.Bool)]
             [ResourceExposure(ResourceScope.Machine)]
+            [HandleProcessCorruptedStateExceptions]
             internal static extern bool MoveFile(string src, string dst);
 
             [DllImport("gdiplus.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
             [ResourceExposure(ResourceScope.None)]
+            [HandleProcessCorruptedStateExceptions]
             internal static extern int GdipSaveImageToFile(HandleRef image, string filename,
                 ref Guid classId, HandleRef encoderParams);
         }

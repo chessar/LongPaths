@@ -39,12 +39,12 @@
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.1.5</VersionPrefix>
+    <VersionPrefix>1.1.6</VersionPrefix>
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Fixed crash on start a second ASP.NET application on the same pool</PackageReleaseNotes>
+    <PackageReleaseNotes>Added HandleProcessCorruptedStateExceptionsAttribute for some methods</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GithubContentUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/</GithubContentUrl>
     <PackageLicenseUrl>$(GithubContentUrl)LICENSE.md</PackageLicenseUrl>

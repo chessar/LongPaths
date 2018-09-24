@@ -19,7 +19,7 @@ namespace Chessar.UnitTests.Hooks
                     .GetField("hooks", BindingFlags.NonPublic | BindingFlags.Static);
                 var hooks = hooksField.GetValue(null) as ConcurrentDictionary<MethodInfo, byte[]>;
                 if (hooks.Keys.Count > 0)
-                    Chessar.HookManager.BatchUnhook(hooks.Keys.First());
+                    Chessar.HookManager.BatchUnhook(hooks.Keys.Last());
                 RemoveLongPathsPatch();
             }
             finally

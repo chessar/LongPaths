@@ -10,6 +10,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 
 namespace Chessar
@@ -64,6 +65,7 @@ namespace Chessar
         /// <exception cref="Win32Exception">
         /// If a native call fails. This is unrecoverable.
         /// </exception>
+        [HandleProcessCorruptedStateExceptions]
         internal static unsafe void Hook(MethodInfo original, MethodInfo replacement)
         {
             if (original is null)
@@ -84,6 +86,7 @@ namespace Chessar
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [HandleProcessCorruptedStateExceptions]
         internal static Exception BatchUnhook(params MethodInfo[] methods)
         {
             if (methods is null || methods.Length == 0)
@@ -129,6 +132,7 @@ namespace Chessar
             format, string.Format(CultureInfo.InvariantCulture, "[{0}.{1}]", method?.DeclaringType
                 .FullName ?? "<unknown type>", method?.Name ?? "<unknown name>"));
 
+        [HandleProcessCorruptedStateExceptions]
         private static unsafe byte[] PatchJMP(MethodInfo original, MethodInfo replacement)
         {
             //JIT compile methods
@@ -187,6 +191,7 @@ namespace Chessar
             return originalOpcodes;
         }
 
+        [HandleProcessCorruptedStateExceptions]
         private static unsafe void UnhookJMP(MethodInfo original, byte[] originalOpcodes)
         {
             var originalSite = original.MethodHandle.GetFunctionPointer();
@@ -212,6 +217,7 @@ namespace Chessar
             }
         }
 
+        [HandleProcessCorruptedStateExceptions]
         private static uint VirtualProtect(IntPtr address, uint size, uint protectionFlags)
         {
             if (!NativeMethods.VirtualProtect(address, (UIntPtr)size, protectionFlags, out uint oldProtection))
@@ -219,6 +225,7 @@ namespace Chessar
             return oldProtection;
         }
 
+        [HandleProcessCorruptedStateExceptions]
         private static void FlushInstructionCache(IntPtr address, uint size) =>
             NativeMethods.FlushInstructionCache(NativeMethods.GetCurrentProcess(), address, (UIntPtr)size);
 
@@ -231,11 +238,14 @@ namespace Chessar
             private const string kernel32_dll = "kernel32.dll";
             [DllImport(kernel32_dll, SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
+            [HandleProcessCorruptedStateExceptions]
             internal static extern bool FlushInstructionCache(IntPtr hProcess, IntPtr lpBaseAddress, UIntPtr dwSize);
             [DllImport(kernel32_dll, SetLastError = true)]
+            [HandleProcessCorruptedStateExceptions]
             internal static extern IntPtr GetCurrentProcess();
             [DllImport(kernel32_dll, SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
+            [HandleProcessCorruptedStateExceptions]
             internal static extern bool VirtualProtect(IntPtr lpAddress, UIntPtr dwSize, uint flNewProtect, out uint lpflOldProtect);
             [Flags]
             internal enum PageProtection : uint
