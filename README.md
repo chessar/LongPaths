@@ -83,7 +83,7 @@ sometimes fall with the
 in ASP.NET applications.
 
 # TODO
-1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
+1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes) and fix [known issues](https://github.com/chessar/LongPaths#known-issues).
 2. Make hooks more thread safe.
 
 # License
