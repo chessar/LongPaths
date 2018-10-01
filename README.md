@@ -75,6 +75,13 @@ See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 Next methods does not work for long paths, even if a prefix is added:
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
 
+# Known Issues
+Patched native methods
+[`MoveFile`](https://referencesource.microsoft.com/#mscorlib/microsoft/win32/win32native.cs,1468), [`GetSecurityInfoByName`](https://referencesource.microsoft.com/#mscorlib/microsoft/win32/win32native.cs,2276), [`GdipSaveImageToFile`](https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Advanced/Gdiplus.cs,1650)
+sometimes fall with the
+[`AccessViolationException`](https://docs.microsoft.com/en-us/dotnet/api/system.accessviolationexception)
+in ASP.NET applications.
+
 # TODO
 1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
 2. Make hooks more thread safe.
