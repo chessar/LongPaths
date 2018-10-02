@@ -40,11 +40,11 @@
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
     <VersionPrefix>1.1.7</VersionPrefix>
-    <VersionSuffix>rc003</VersionSuffix>
+    <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Fixed AccessViolationException for some methods</PackageReleaseNotes>
+    <PackageReleaseNotes>Excluded for patch methods Image.Save and DirectoryInfo.MoveTo</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GithubContentUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/</GithubContentUrl>
     <PackageLicenseUrl>$(GithubContentUrl)LICENSE.md</PackageLicenseUrl>

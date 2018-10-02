@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/:license-mit-blue.svg)](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)
 ![Platforms](https://img.shields.io/badge/platform-windows-lightgray.svg)
 ![Language](https://img.shields.io/badge/language-c%23-orange.svg)
-![Coverage](https://img.shields.io/badge/coverage-90%25-yellow.svg)
+![Coverage](https://img.shields.io/badge/coverage-89.5%25-yellow.svg)
 
 **Chessar.LongPaths** is a .NET library that allows you to enable long path support for the main
 [`System.IO`](https://docs.microsoft.com/en-us/dotnet/api/system.io)
@@ -56,7 +56,6 @@ using static Chessar.Hooks;
 ...
 
     PatchLongPaths();
-
 ```
 4. Usage
 ```csharp
@@ -72,18 +71,23 @@ var fullName = fileInfo.FullName; // with long path prefix
 See also [Examples](https://github.com/chessar/LongPaths/tree/master/Examples).
 
 # Notes
-Next methods does not work for long paths, even if a prefix is added:
+1. Next methods does not work for long paths, even if a prefix is added:
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
+2. For the following methods:
+  * [`DirectoryInfo.MoveTo(String)`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.moveto)
+  * [`Image.Save(String[, ...])`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.image.save)<br/>
+hook is not used, so when using them, add the long path prefix:
+```csharp
+...
+using static Chessar.Hooks;
+...
 
-# Known Issues
-Patched native method
-[`GdipSaveImageToFile`](https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Advanced/Gdiplus.cs,1650)
-sometimes fall with the
-[`AccessViolationException`](https://docs.microsoft.com/en-us/dotnet/api/system.accessviolationexception)
-in ASP.NET applications.
+    var di = new DirectoryInfo(...);
+    di.MoveTo(path.AddLongPathPrefixAndFixSeparators());
+```
 
 # TODO
-1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes) and fix [known issues](https://github.com/chessar/LongPaths#known-issues).
+1. Add long path support in methods from [`Notes`](https://github.com/chessar/LongPaths#notes).
 2. Make hooks more thread safe.
 
 # License

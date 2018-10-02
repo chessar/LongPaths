@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Text;
 using System.Web;
@@ -65,8 +63,7 @@ namespace Chessar
             tHttpResponse = typeof(HttpResponse),
             tUri = typeof(Uri),
             tEnv = typeof(Environment),
-            tDir = typeof(Directory),
-            tDI = typeof(DirectoryInfo);
+            tDir = typeof(Directory);
 
         #region Lazy Delegates
 
@@ -102,10 +99,8 @@ namespace Chessar
             getFullPathInternal.Value.Method,
             GetMethod(tDir, "Delete", privateStatic, tString, tString, tBool, tBool),
             GetMethod(tDir, "InternalMove", privateStatic, tString, tString, tBool),
-            GetMethod(tDI, "MoveTo", BindingFlags.Public | BindingFlags.Instance, tString),
             GetMethod(typeof(NativeObjectSecurity), "CreateInternal", privateStatic),
             GetMethod(tHttpResponse, "GetNormalizedFilename", privateInstance),
-            GetMethod(typeof(Image).Assembly.GetType("System.Drawing.SafeNativeMethods+Gdip"), "GdipSaveImageToFile", privateStatic),
             GetMethod(tUri, "CreateThis", privateInstance)
         });
 
@@ -117,13 +112,9 @@ namespace Chessar
         private static Lazy<FieldInfo>
             mStringUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_String", privateInstance)),
             mFlagsUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_Flags", privateInstance)),
-            mSyntaxUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_Syntax", privateInstance)),
-            diFullPathFld = new Lazy<FieldInfo>(() => tDI.GetField("FullPath", privateInstance)),
-            diOriginalPathFld = new Lazy<FieldInfo>(() => tDI.GetField("OriginalPath", privateInstance)),
-            diDataInitialisedFld = new Lazy<FieldInfo>(() => tDI.GetField("_dataInitialised", privateInstance));
+            mSyntaxUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_Syntax", privateInstance));
         internal static Lazy<PropertyInfo>
-            responseContext = new Lazy<PropertyInfo>(() => tHttpResponse.GetProperty("Context", privateInstance)),
-            diDisplayPathProp = new Lazy<PropertyInfo>(() => tDI.GetProperty("DisplayPath", privateInstance));
+            responseContext = new Lazy<PropertyInfo>(() => tHttpResponse.GetProperty("Context", privateInstance));
         private static Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
             typeof(CommonSecurityDescriptor).GetConstructors(privateInstance)
                 .First(ci => ci.GetParameters().Length == 4));
@@ -213,7 +204,7 @@ namespace Chessar
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="path"/> is <see langword="null"/>.
         /// </exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string AddLongPathPrefix(this string path)
         {
             if (path is null)
@@ -222,6 +213,19 @@ namespace Chessar
 
             return addLongPathPrefix.Value(path);
         }
+
+        /// <summary>
+        /// Add long path prefix (<see langword="\\?\"/> or <see langword="\\?\UNC\"/>)
+        /// and delete consecutive directory path chars.
+        /// </summary>
+        /// <param name="path">Path.</param>
+        /// <returns>Path with long prefix and without duplicate directory path chars.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="path"/> is <see langword="null"/>.
+        /// </exception>
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string AddLongPathPrefixAndFixSeparators(this string path)
+            => FixPathSeparators(AddLongPathPrefix(path));
 
         /// <summary>
         /// Remove long path prefix (<see langword="\\?\"/> or <see langword="\\?\UNC\"/>) if present.
@@ -250,14 +254,6 @@ namespace Chessar
         private static void InternalMovePatched(string sourceDirName, string destDirName, bool checkHost)
             => longPathDirectoryMove.Value(FixPathSeparators(sourceDirName), FixPathSeparators(destDirName));
 
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string EnvGetResString1(string key)
-            => envGetResourceString1.Value(key);
-
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string EnvGetResString2(string key, params object[] values)
-            => envGetResourceString2.Value(key, values);
-
         [MethodImpl(MethodImplOptions.NoInlining)] // required
         [HandleProcessCorruptedStateExceptions]
         private static CommonSecurityDescriptor CreateInternalPatched(ResourceType resourceType,
@@ -272,7 +268,7 @@ namespace Chessar
 
             try
             {
-                object[] parameters = { resourceType, WithPrefixWoDblSeps(name), handle, includeSections, null };
+                object[] parameters = { resourceType, AddLongPathPrefixAndFixSeparators(name), handle, includeSections, null };
                 var error = (int)win32GetSecurityInfo.Value.Invoke(null, parameters);
 
                 if (error != ERROR_SUCCESS)
@@ -389,34 +385,6 @@ namespace Chessar
             return AddLongPathPrefix(fn);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [HandleProcessCorruptedStateExceptions]
-        private static int GdipSaveImageToFilePatched(HandleRef image, string filename,
-            ref Guid classId, HandleRef encoderParams) => NativeMethods.GdipSaveImageToFile(
-                image, WithPrefixWoDblSeps(filename), ref classId, encoderParams);
-
-        [MethodImpl(MethodImplOptions.NoInlining)] // required
-        private static void MoveToPatched(DirectoryInfo thisDi, string destDirName)
-        {
-            longPathDirectoryMove.Value(thisDi.FullName, FixPathSeparators(destDirName));
-
-            var fullDestDirName = GetFullPathInternalPatched(destDirName);
-            if (fullDestDirName.Length != 0 &&
-                fullDestDirName[fullDestDirName.Length - 1] != Path.DirectorySeparatorChar)
-                fullDestDirName = fullDestDirName + Path.DirectorySeparatorChar;
-            var displayName = string.Empty;
-            // Special case "<DriveLetter>:" to point to "<CurrentDirectory>" instead
-            if ((destDirName.Length == 2) && (destDirName[1] == ':'))
-                displayName = ".";
-            else
-                displayName = destDirName;
-            diFullPathFld.Value.SetValue(thisDi, fullDestDirName);
-            diOriginalPathFld.Value.SetValue(thisDi, destDirName);
-            diDisplayPathProp.Value.SetValue(thisDi, displayName);
-            // Flush any cached information about the directory.
-            diDataInitialisedFld.Value.SetValue(thisDi, -1);
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)] // required
         private static void CreateThisPatched(Uri thisUri, string uri, bool dontEscape, UriKind uriKind)
         {
@@ -499,6 +467,14 @@ namespace Chessar
             return sb.ToString();
         }
 
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static string EnvGetResString1(string key)
+            => envGetResourceString1.Value(key);
+
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static string EnvGetResString2(string key, params object[] values)
+            => envGetResourceString2.Value(key, values);
+
         // See https://referencesource.microsoft.com/#mscorlib/system/io/pathinternal.cs,251
         // While paths like "//?/C:/" will work, they're treated the same as "\\.\" paths.
         // Skipping of normalization will *only* occur if back slashes ('\') are used.
@@ -508,10 +484,6 @@ namespace Chessar
             && (IsDirectorySeparatorChar(path[1]) || path[1] == '?')
             && path[2] == '?'
             && IsDirectorySeparatorChar(path[3]);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string WithPrefixWoDblSeps(this string path)
-            => FixPathSeparators(AddLongPathPrefix(path));
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Tuple<StackTrace, Type, string, bool> GetStackTrace(in int skipFrames)
@@ -619,19 +591,6 @@ namespace Chessar
                 return;
             Trace.TraceError("[GetFullPathInternal StackTrace Exception]:\r\n{0}", ex);
             Trace.Flush();
-        }
-
-        #endregion
-
-        #region Natives
-
-        private static class NativeMethods
-        {
-            [DllImport("gdiplus.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
-            [ResourceExposure(ResourceScope.None)]
-            [HandleProcessCorruptedStateExceptions]
-            internal static extern int GdipSaveImageToFile(HandleRef image, string filename,
-                ref Guid classId, HandleRef encoderParams);
         }
 
         #endregion
