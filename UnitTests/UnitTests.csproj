@@ -21,7 +21,7 @@
     <PackageReference Include="Trinet.Core.IO.Ntfs" Version="4.1.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
-    <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net462'">
     <ProjectReference Include="..\src\Chessar.LongPaths.csproj" />

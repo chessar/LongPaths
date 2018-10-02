@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/:license-mit-blue.svg)](https://github.com/chessar/LongPaths/blob/master/LICENSE.md)
 ![Platforms](https://img.shields.io/badge/platform-windows-lightgray.svg)
 ![Language](https://img.shields.io/badge/language-c%23-orange.svg)
-![Coverage](https://img.shields.io/badge/coverage-100%25-yellow.svg)
+![Coverage](https://img.shields.io/badge/coverage-90%25-yellow.svg)
 
 **Chessar.LongPaths** is a .NET library that allows you to enable long path support for the main
 [`System.IO`](https://docs.microsoft.com/en-us/dotnet/api/system.io)
@@ -76,8 +76,8 @@ Next methods does not work for long paths, even if a prefix is added:
 * [`Directory.SetCurrentDirectory`](https://docs.microsoft.com/en-us/dotnet/api/system.io.directory.setcurrentdirectory)
 
 # Known Issues
-Patched native methods
-[`MoveFile`](https://referencesource.microsoft.com/#mscorlib/microsoft/win32/win32native.cs,1468), [`GetSecurityInfoByName`](https://referencesource.microsoft.com/#mscorlib/microsoft/win32/win32native.cs,2276), [`GdipSaveImageToFile`](https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Advanced/Gdiplus.cs,1650)
+Patched native method
+[`GdipSaveImageToFile`](https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Advanced/Gdiplus.cs,1650)
 sometimes fall with the
 [`AccessViolationException`](https://docs.microsoft.com/en-us/dotnet/api/system.accessviolationexception)
 in ASP.NET applications.
