@@ -430,12 +430,12 @@ namespace Chessar
             sb.Append(path[0]).Append(path[1]);
             var len = path.Length;
             char ch;
-            var prevIsSep = false;
+            bool prevIsSep = false, curIsSep = false;
             var buf = new StringBuilder();
             for (int i = 2; i < len; ++i)
             {
                 ch = path[i];
-                var curIsSep = ch == '/' || ch == '\\';
+                curIsSep = ch == '/' || ch == '\\';
                 if (curIsSep)
                 {
                     if (prevIsSep && buf.Length > 0)
@@ -464,7 +464,15 @@ namespace Chessar
                     sb.Append(ch);
                 }
             }
-            return sb.ToString();
+            if (buf.Length > 0 && prevIsSep)
+                sb.Append(Path.DirectorySeparatorChar);
+            if (curIsSep && sb[sb.Length - 1] != Path.DirectorySeparatorChar)
+                sb.Append(Path.DirectorySeparatorChar);
+            var res = sb.ToString();
+            var trimmed = res.TrimEnd();
+            if (trimmed.Length > 0 && trimmed[trimmed.Length - 1] == Path.VolumeSeparatorChar)
+                res = trimmed + Path.DirectorySeparatorChar;
+            return res;
         }
 
         [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]

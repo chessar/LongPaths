@@ -39,12 +39,12 @@
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.1.7</VersionPrefix>
+    <VersionPrefix>1.1.8</VersionPrefix>
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Excluded for patch methods Image.Save and DirectoryInfo.MoveTo</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed enumerating of FS items for a drive letter</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GithubContentUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/</GithubContentUrl>
     <PackageLicenseUrl>$(GithubContentUrl)LICENSE.md</PackageLicenseUrl>
