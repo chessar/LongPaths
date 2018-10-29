@@ -421,7 +421,7 @@ namespace Chessar
         /// otherwise - <see langword="false" />.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-        public static bool NoPatchRequired() => testResultString == getFullPathInternal.Value(testString); //-V3039
+        public static bool NoPatchRequired() => testResultString == getFullPathInternal.Value(testString);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string FixPathSeparators(string path)
@@ -505,7 +505,7 @@ namespace Chessar
                 st = new StackTrace(skipFrames, false);
                 var cMethod = st.GetFrame(0)?.GetMethod();
                 cType = cMethod?.DeclaringType;
-                isGetTempPath = (cType == tPath && string.Equals("GetTempPath", cMethod.Name)); //-V3105
+                isGetTempPath = (cType == tPath && string.Equals("GetTempPath", cMethod?.Name));
                 if (!isGetTempPath)
                     ccTypeFullName = st.GetFrame(1)?.GetMethod().DeclaringType.FullName;
             }
