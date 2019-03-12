@@ -39,7 +39,7 @@
   <PropertyGroup Label="NuGet">
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.1.8</VersionPrefix>
+    <VersionPrefix>1.1.9</VersionPrefix>
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>

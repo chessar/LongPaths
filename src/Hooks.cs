@@ -571,7 +571,7 @@ namespace Chessar
                     t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (
 
                     // Path
-                    (t == tPath || t == tFile) && fn != null && fn.StartsWith("System.Web.", StringComparison.Ordinal))
+                    (t == tPath || t == tFile) && fn != null && (fn.StartsWith("System.Web.", StringComparison.Ordinal)/* || (needRemoveLongPrefix = fn.StartsWith("Microsoft.WindowsAPICodePack.", StringComparison.Ordinal))*/))
                 );
         }
 

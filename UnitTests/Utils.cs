@@ -50,6 +50,7 @@ namespace Chessar.UnitTests
         internal static string RandomString => Guid.NewGuid().ToString();
         internal static string RandomLongFolder => $"{LongTempFolder}{RandomString}";
         internal static string RandomLongTxtFile => $"{RandomLongFolder}.txt";
+        internal static string RandomShortTxtFile => $"{TempFolder}{DirectorySeparatorChar}{RandomString}.txt";
 
         #endregion
 
@@ -155,6 +156,20 @@ namespace Chessar.UnitTests
                 .AddLongPathPrefix()
 #endif
             : pathWithPrefix);
+        }
+
+        internal static (string, string) CreateShortTempFile(in bool asNetwork = false)
+        {
+            var path = RandomShortTxtFile;
+            var pathWithPrefix = path.WithPrefix();
+            File.CreateText(pathWithPrefix.Replace(seps[1], seps[0])).Dispose();
+            if (asNetwork)
+                path = path.ToNetworkPath();
+            return (path, asNetwork ? path
+#if NET462
+                    .AddLongPathPrefix()
+#endif
+                : pathWithPrefix);
         }
 
         internal static (string, string) CreateLongTempFile(in bool skipCreate = false, in bool asNetwork = false, in bool withSlash = false)

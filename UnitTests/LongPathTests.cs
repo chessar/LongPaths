@@ -25,6 +25,9 @@ namespace Chessar.UnitTests
 
     [TestClass, TestCategory(nameof(System.Configuration.Configuration))]
     public sealed partial class ConfigurationTests { }
+
+    [TestClass, TestCategory(nameof(Microsoft.WindowsAPICodePack.Shell.ShellObject))]
+    public sealed partial class ShellObjectTests { }
 #endif
 
     [TestClass, TestCategory(nameof(Image))]
