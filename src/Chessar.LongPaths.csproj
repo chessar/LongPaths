@@ -17,6 +17,8 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\$(Company).ruleset</CodeAnalysisRuleSet>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -34,6 +36,14 @@
       <CopyToOutputDirectory>false</CopyToOutputDirectory>
       <PackagePath>content/net462</PackagePath>
     </Content>
+    <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <PropertyGroup Label="NuGet">
@@ -43,12 +53,10 @@
     <!--VersionSuffix>rc001</VersionSuffix-->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
-    <Copyright>Copyright © $(Company) 2018</Copyright>
-    <PackageReleaseNotes>Fixed enumerating of FS items for a drive letter</PackageReleaseNotes>
+    <Copyright>Copyright © Chessar 2020</Copyright>
+    <PackageReleaseNotes>Revised in VS 2019</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GithubContentUrl>https://raw.githubusercontent.com/chessar/LongPaths/master/</GithubContentUrl>
-    <PackageLicenseUrl>$(GithubContentUrl)LICENSE.md</PackageLicenseUrl>
-    <PackageIconUrl>$(GithubContentUrl)icon.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/chessar/LongPaths</PackageProjectUrl>
     <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

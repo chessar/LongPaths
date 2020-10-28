@@ -109,13 +109,13 @@ namespace Chessar
             uriInitializeUri = new Lazy<MethodInfo>(() => GetMethod(tUri, "InitializeUri", privateInstance)),
             win32GetSecurityInfo = new Lazy<MethodInfo>(() => GetMethod(
                 Type.GetType("System.Security.AccessControl.Win32"), "GetSecurityInfo", privateStatic));
-        private static Lazy<FieldInfo>
+        private static readonly Lazy<FieldInfo>
             mStringUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_String", privateInstance)),
             mFlagsUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_Flags", privateInstance)),
             mSyntaxUriFld = new Lazy<FieldInfo>(() => tUri.GetField("m_Syntax", privateInstance));
         internal static Lazy<PropertyInfo>
             responseContext = new Lazy<PropertyInfo>(() => tHttpResponse.GetProperty("Context", privateInstance));
-        private static Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
+        private static readonly Lazy<ConstructorInfo> csdCtor = new Lazy<ConstructorInfo>(() =>
             typeof(CommonSecurityDescriptor).GetConstructors(privateInstance)
                 .First(ci => ci.GetParameters().Length == 4));
 
