@@ -23,7 +23,7 @@ namespace Chessar.UnitTests
         public void File_CreateWithLongPrefix_UNC() => FileCreate(true, true);
 
 
-        private void FileCreate(in bool withPrefix, in bool asNetwork)
+        private static void FileCreate(in bool withPrefix, in bool asNetwork)
         {
             var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork);
             var imagePath = Path.Combine(path, "1x1.jpg");

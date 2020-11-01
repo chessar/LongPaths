@@ -30,8 +30,8 @@ namespace Chessar.UnitTests
 
             IsTrue(di.Exists);
 #if NET462
-            IsTrue(di.FullName.StartsWith(LongPathPrefix));
-            IsTrue(diFullName.StartsWith(LongPathPrefix));
+            IsTrue(di.FullName.StartsWith(LongPathPrefix, System.StringComparison.Ordinal));
+            IsTrue(diFullName.StartsWith(LongPathPrefix, System.StringComparison.Ordinal));
 #endif
             AreEqual(di.FullName, diFullName);
         }

@@ -36,6 +36,7 @@
       <CopyToOutputDirectory>false</CopyToOutputDirectory>
       <PackagePath>content/net462</PackagePath>
     </Content>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="..\icon.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -44,6 +45,13 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup Label="NuGet">

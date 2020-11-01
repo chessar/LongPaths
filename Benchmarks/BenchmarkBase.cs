@@ -12,15 +12,17 @@ namespace Chessar.Benchmarks
         protected const BindingFlags privateStatic
             = BindingFlags.NonPublic | BindingFlags.Static;
 
-        protected object[] args;
-        protected MethodInfo method;
-        protected T func;
+#pragma warning disable CA1819 // Properties should not return arrays
+        protected object[] Args { get; set; }
+#pragma warning restore CA1819 // Properties should not return arrays
+        protected MethodInfo Method { get; set; }
+        protected T Function { get; set; }
 
         [GlobalSetup]
         public void Setup()
         {
             Init();
-            func = (T)method.MakeDelegate();
+            Function = (T)Method.MakeDelegate();
         }
 
         protected abstract void Init();

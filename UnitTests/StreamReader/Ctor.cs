@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using static Chessar.UnitTests.Utils;
@@ -37,7 +38,7 @@ namespace Chessar.UnitTests
                 : new StreamReader(path)) : new StreamReader(path, enc))
                 content = sr.ReadToEnd();
 
-            AreEqual(content, TenFileContent, false);
+            AreEqual(content, TenFileContent, false, CultureInfo.InvariantCulture);
         }
     }
 }

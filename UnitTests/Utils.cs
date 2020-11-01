@@ -55,9 +55,9 @@ namespace Chessar.UnitTests
         #endregion
 
         [AssemblyInitialize]
-#pragma warning disable CS3001 // Argument type is not CLS-compliant
+#pragma warning disable CS3001, CA1801 // Argument type is not CLS-compliant. Review unused parameters
         public static void Init(TestContext testContext)
-#pragma warning restore CS3001 // Argument type is not CLS-compliant
+#pragma warning restore CA1801, CA1801 // Review unused parameters. Argument type is not CLS-compliant
         {
             TempFolder = Combine(GetTempPath(), RandomString).Trim(prefixChars);
             if (!Directory.Exists(TempFolder))
@@ -101,7 +101,7 @@ namespace Chessar.UnitTests
                     return path;
                 if (path[2] != '?')
                     return path;
-                else if (path.Length > 7 && string.Equals("UNC", path.Substring(4, 3).ToUpperInvariant()))
+                else if (path.Length > 7 && string.Equals("UNC", path.Substring(4, 3).ToUpperInvariant(), StringComparison.Ordinal))
                     path = path.Substring(8);
                 else
                     path = path.TrimStart(prefixChars);

@@ -51,7 +51,7 @@ namespace Chessar
 
         #region Fields
 
-        private static readonly BindingFlags
+        private const BindingFlags
             privateStatic = BindingFlags.NonPublic | BindingFlags.Static,
             privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
         private static readonly Type
@@ -249,8 +249,9 @@ namespace Chessar
 
         #region Patches (required NoInlining)
 
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters")]
         [MethodImpl(MethodImplOptions.NoInlining)] // required
+        [SuppressMessage("Microsoft.Usage", "CA1801: ReviewUnusedParameters")]
+        [SuppressMessage("Style", "IDE0060: Remove unused parameter", Justification = "<Pending>")]
         private static void InternalMovePatched(string sourceDirName, string destDirName, bool checkHost)
             => longPathDirectoryMove.Value(FixPathSeparators(sourceDirName), FixPathSeparators(destDirName));
 
@@ -369,6 +370,7 @@ namespace Chessar
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [SuppressMessage("Microsoft.Usage", "CA1801: Review unused parameters")]
+        [SuppressMessage("Style", "IDE0060: Remove unused parameter", Justification = "<Pending>")]
         private static void DeletePatched(string fullPath, string userPath, bool recursive, bool checkHost)
             => longPathDirectoryDeleteHelper.Value(fullPath, userPath, recursive, true);
 
@@ -505,7 +507,7 @@ namespace Chessar
                 st = new StackTrace(skipFrames, false);
                 var cMethod = st.GetFrame(0)?.GetMethod();
                 cType = cMethod?.DeclaringType;
-                isGetTempPath = (cType == tPath && string.Equals("GetTempPath", cMethod?.Name));
+                isGetTempPath = (cType == tPath && string.Equals("GetTempPath", cMethod?.Name, StringComparison.Ordinal));
                 if (!isGetTempPath)
                     ccTypeFullName = st.GetFrame(1)?.GetMethod().DeclaringType.FullName;
             }
@@ -565,7 +567,7 @@ namespace Chessar
                 // https://referencesource.microsoft.com/#mscorlib/system/io/path.cs,72f9fabbc9d544a5,references
                 !(
                     // StringExpressionSet (https://referencesource.microsoft.com/#mscorlib/system/security/util/stringexpressionset.cs,755)
-                    (needRemoveLongPrefix = string.Equals(t.Name, "StringExpressionSet")) ||
+                    (needRemoveLongPrefix = string.Equals(t.Name, "StringExpressionSet", StringComparison.Ordinal)) ||
 
                     // System.Reflection Namespace
                     t.FullName.StartsWith("System.Reflection.", StringComparison.OrdinalIgnoreCase) || (

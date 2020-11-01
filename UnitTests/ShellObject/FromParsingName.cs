@@ -34,7 +34,7 @@ namespace Chessar.UnitTests
         public void ShellObject_FromParsingNameLongWithLongPrefix_UNC() => FromParsingName(false, true, true);
 
 
-        private void FromParsingName(in bool shortPath, in bool withPrefix, in bool asNetwork)
+        private static void FromParsingName(in bool shortPath, in bool withPrefix, in bool asNetwork)
         {
             var (filePath, filePathWithPrefix) = shortPath
                 ? CreateShortTempFile(asNetwork: in asNetwork)

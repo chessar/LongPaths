@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using static Chessar.UnitTests.Utils;
@@ -21,14 +22,14 @@ namespace Chessar.UnitTests
 
             try
             {
-                using (var wc = new WebClient())
-                    fullPath = wc.DownloadString($"http://localhost:{port}/Handler.ashx");
+                using var wc = new WebClient();
+                fullPath = wc.DownloadString($"http://localhost:{port}/Handler.ashx");
             }
             catch (WebException wex) when (HandlerWebException(wex))
             { }
 
             IsNotNull(fullPath);
-            IsTrue(fullPath.StartsWith(LongPathPrefix));
+            IsTrue(fullPath.StartsWith(LongPathPrefix, StringComparison.Ordinal));
         }
 
         [TestMethod]
@@ -75,8 +76,8 @@ namespace Chessar.UnitTests
 
             try
             {
-                using (var wc = new WebClient())
-                    wc.DownloadFile($"http://localhost:{port}/{handler}File.ashx{query}", tempFile);
+                using var wc = new WebClient();
+                wc.DownloadFile($"http://localhost:{port}/{handler}File.ashx{query}", tempFile);
             }
             catch (WebException wex) when (HandlerWebException(wex))
             { }
@@ -136,6 +137,9 @@ namespace Chessar.UnitTests
         public static void Init(TestContext context)
 #pragma warning restore CS3001 // Argument type is not CLS-compliant
         {
+            if (context is null)
+                throw new ArgumentNullException(nameof(context));
+
             var siteFolder = Path.Combine(Path.GetDirectoryName(
                 Path.GetDirectoryName(context.TestDir)), @"Examples\AspNetForms");
 
@@ -149,8 +153,7 @@ namespace Chessar.UnitTests
         {
             Thread.Sleep(100);
 
-            if (iis != null)
-                iis.Dispose();
+            iis?.Dispose();
         }
     }
 }

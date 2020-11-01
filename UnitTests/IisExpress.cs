@@ -9,9 +9,9 @@ namespace Chessar.UnitTests
     internal sealed class IisExpress : IDisposable
     {
         private readonly object locker = new object();
-        private volatile bool disposed = false;
-        private Process process = null;
-        private readonly string iisExpressPath = null;
+        private volatile bool disposed;
+        private Process process;
+        private readonly string iisExpressPath;
 
         internal IisExpress() => iisExpressPath =
             Path.Combine(Environment.GetFolderPath(8 == IntPtr.Size

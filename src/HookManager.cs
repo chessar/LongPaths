@@ -108,7 +108,9 @@ namespace Chessar
                 {
                     UnhookJMP(m, originalOpcodes);
                 }
+#pragma warning disable CA2153 // Do Not Catch Corrupted State Exceptions
                 catch (Exception ex)
+#pragma warning restore CA2153 // Do Not Catch Corrupted State Exceptions
                 {
                     errors.Add(ex);
                     TraceException(ex);

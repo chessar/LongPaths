@@ -7,7 +7,7 @@ namespace Chessar.Benchmarks
 {
     static class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             BenchmarkSwitcher.FromTypes(Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => t.IsSubclassOfRawGeneric(typeof(BenchmarkBase<>))).ToArray()).RunAllJoined();

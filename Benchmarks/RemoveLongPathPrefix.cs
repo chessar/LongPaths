@@ -12,15 +12,15 @@ namespace Chessar.Benchmarks
         protected override void Init()
         {
             path = Path.GetRandomFileName();
-            args = new[] { path };
-            method = typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null, new[] { typeof(string) }, null);
+            Args = new[] { path };
+            Method = typeof(Path).GetMethod("RemoveLongPathPrefix", privateStatic, null, new[] { typeof(string) }, null);
         }
 
         [Benchmark(Baseline = true)]
-        public string MethodInfoInvoke() => (string)method.Invoke(null, args);
+        public string MethodInfoInvoke() => (string)Method.Invoke(null, Args);
 
         [Benchmark]
-        public string CreateDelegate() => func(path);
+        public string CreateDelegate() => Function(path);
 
         [Benchmark]
         public string ChessarLongPath() => path.AddLongPathPrefix();

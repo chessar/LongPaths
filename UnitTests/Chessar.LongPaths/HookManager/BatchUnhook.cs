@@ -15,7 +15,7 @@ namespace Chessar.UnitTests.HookManager
         public void BatchUnhook_NoMethods()
         {
             IsNull(BatchUnhook(null));
-            IsNull(BatchUnhook(new MethodInfo[0]));
+            IsNull(BatchUnhook(Array.Empty<MethodInfo>()));
             IsNull(BatchUnhook(new MethodInfo[] { null, null }));
         }
 
@@ -36,7 +36,7 @@ namespace Chessar.UnitTests.HookManager
 
             var hooksField = typeof(Chessar.HookManager).GetField("hooks", privateStatic);
             var hooks = (ConcurrentDictionary<MethodInfo, byte[]>)hooksField.GetValue(null);
-            hooks[originalMethod] = new byte[0];
+            hooks[originalMethod] = Array.Empty<byte>();
             var error = BatchUnhook(originalMethod);
 
             IsNotNull(error);

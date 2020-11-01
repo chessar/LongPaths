@@ -9,7 +9,7 @@ namespace Chessar.UnitTests
     [TestClass, TestCategory(nameof(ZipFile))]
     public sealed partial class ZipFileTests
     {
-        private void ZipFileCreate(in bool withPrefix, in bool asNetwork)
+        private static void ZipFileCreate(in bool withPrefix, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             Path.ChangeExtension(path, ".zip");

@@ -16,22 +16,22 @@ namespace Chessar.UnitTests.Hooks
     [TestClass, TestCategory(nameof(Hooks))]
     public sealed partial class HooksTests
     {
-        private static readonly BindingFlags
+        private const BindingFlags
             privateStatic = BindingFlags.NonPublic | BindingFlags.Static,
             privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
-        private static N normalizePathPatched = null;
-        private static S getFullPathInternalPatched = null;
-        private static R getNormalizedFilenamePatched = null;
-        private static MethodInfo needPatch = null;
-        private static readonly string
+        private static N normalizePathPatched;
+        private static S getFullPathInternalPatched;
+        private static R getNormalizedFilenamePatched;
+        private static MethodInfo needPatch;
+        private const string
             path = @"c:\path",
             relPath = "/path/relpath",
             url = "http://localhost/p a t h/";
 
         [ClassInitialize]
-#pragma warning disable CS3001 // Argument type is not CLS-compliant
+#pragma warning disable CS3001, CA1801, IDE0060 // Review unused parameters. Argument type is not CLS-compliant
         public static void Init(TestContext context)
-#pragma warning restore CS3001 // Argument type is not CLS-compliant
+#pragma warning restore CS3001, CA1801, IDE0060 // Review unused parameters. Argument type is not CLS-compliant
         {
             var t = typeof(Chessar.Hooks);
             normalizePathPatched = (N)t
@@ -52,7 +52,7 @@ namespace Chessar.UnitTests.Hooks
         {
             HostingEnvironment hostingEnvironment;
             if (!HostingEnvironment.IsHosted)
-                new HostingEnvironment();
+                _ = new HostingEnvironment();
             var het = typeof(HostingEnvironment);
             var heField = het.GetField("_theHostingEnvironment", privateStatic);
             hostingEnvironment = (HostingEnvironment)heField.GetValue(null);
@@ -72,7 +72,9 @@ namespace Chessar.UnitTests.Hooks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static HttpContext GetContext() => new HttpContext(new FakeHttpWorkerRequest(relPath));
 
+#pragma warning disable CA1032, CA1064 // Implement standard exception constructors. Exceptions should be public
         private sealed class TestTraceException : Exception { }
+#pragma warning restore CA1032, CA1064 // Exceptions should be public. Implement standard exception constructors
 
         private static string GetTraceMessage(Action action)
         {
