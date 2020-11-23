@@ -34,14 +34,12 @@ namespace Chessar.UnitTests
 
             IsTrue(File.Exists(imagePathWithPrefix));
 
-            using (var tf = TagLib.File.Create(withPrefix ? imagePathWithPrefix : imagePath))
-            {
-                IsNotNull(tf);
-                var props = tf.Properties;
-                IsNotNull(props);
-                AreEqual(props.PhotoHeight, 1);
-                AreEqual(props.PhotoWidth, 1);
-            }
+            using var tf = TagLib.File.Create(withPrefix ? imagePathWithPrefix : imagePath);
+            IsNotNull(tf);
+            var props = tf.Properties;
+            IsNotNull(props);
+            AreEqual(props.PhotoHeight, 1);
+            AreEqual(props.PhotoWidth, 1);
         }
     }
 }

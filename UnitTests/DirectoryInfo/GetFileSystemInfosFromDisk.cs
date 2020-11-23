@@ -50,8 +50,7 @@ namespace Chessar.UnitTests
             if (withSlash)
                 disk += Path.DirectorySeparatorChar;
 
-            dynamic items = null;
-
+            dynamic items;
             try
             {
                 var di = new DirectoryInfo(disk);

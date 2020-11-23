@@ -85,7 +85,6 @@ namespace Chessar
             hooks.TryAdd(original, PatchJMP(original, replacement));
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         [HandleProcessCorruptedStateExceptions]
         internal static Exception BatchUnhook(params MethodInfo[] methods)
         {

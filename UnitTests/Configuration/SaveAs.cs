@@ -25,7 +25,7 @@ namespace Chessar.UnitTests
 
         private static void ConfigSaveAs(in bool withPrefix, in bool asNetwork)
         {
-            var p = Environment.OSVersion.Platform;
+            _ = Environment.OSVersion.Platform;
 
             var cfg = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             IsNotNull(cfg);

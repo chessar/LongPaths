@@ -133,9 +133,7 @@ namespace Chessar.UnitTests
         }
 
         [ClassInitialize]
-#pragma warning disable CS3001 // Argument type is not CLS-compliant
         public static void Init(TestContext context)
-#pragma warning restore CS3001 // Argument type is not CLS-compliant
         {
             if (context is null)
                 throw new ArgumentNullException(nameof(context));

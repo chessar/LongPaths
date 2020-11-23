@@ -16,8 +16,7 @@ namespace Chessar.UnitTests
 
             var (subPath, subPathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork);
             File.WriteAllText(subPathWithPrefix, TenFileContent);
-
-            var (subFolder, subFolderWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork);
+            var (_, _) = CreateLongTempFolder(asNetwork: in asNetwork);
 
             using (var zf = ZipFile.Create(withPrefix ? pathWithPrefix : path))
             {

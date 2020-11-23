@@ -25,7 +25,7 @@ namespace Chessar.UnitTests
 
         private static void DirectoryInfoGetSetAccessControl(in bool withSlash, in bool asNetwork)
         {
-            var (path, pathWithPrefix) = CreateLongTempFolder(asNetwork: in asNetwork, withSlash: in withSlash);
+            var (path, _) = CreateLongTempFolder(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var di = new DirectoryInfo(path);
 

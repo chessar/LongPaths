@@ -31,8 +31,7 @@ namespace Chessar.UnitTests
                 FileSystemRights.FullControl, AccessControlType.Allow));
 
             File.SetAccessControl(path, fs);
-
-            var ds1 = File.GetAccessControl(pathWithPrefix);
+            _ = File.GetAccessControl(pathWithPrefix);
 
             IsTrue(true);
         }

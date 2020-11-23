@@ -13,7 +13,7 @@ namespace Chessar.UnitTests
 
         private static FileSystemInfo AddAltNtfsStream(string filePath)
         {
-            FileSystemInfo fsi = null;
+            FileSystemInfo fsi;
             if (Directory.Exists(filePath))
                 fsi = new DirectoryInfo(filePath);
             else

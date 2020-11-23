@@ -29,11 +29,9 @@ namespace Chessar.UnitTests
         private static void DirectoryGetFsDisk(in bool? files, in bool withPrefix)
         {
             var disk = (withPrefix ? LongPathPrefix : string.Empty) + @"t:\";
-            string[] items = null;
-
             try
             {
-                items = files is null
+                var items = files is null
                     ? Directory.GetFileSystemEntries(disk)
                     : files.Value
                         ? Directory.GetFiles(disk)

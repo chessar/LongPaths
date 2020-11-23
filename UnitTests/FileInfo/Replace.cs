@@ -23,7 +23,7 @@ namespace Chessar.UnitTests
         private static void FileInfoReplace(in bool withSlash, in bool asNetwork)
         {
             var (path, pathWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
-            var (pathNew, pathNewWithPrefix) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
+            var (pathNew, _) = CreateLongTempFile(asNetwork: in asNetwork, withSlash: in withSlash);
 
             var fi = new FileInfo(path);
 
